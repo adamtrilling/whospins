@@ -5,8 +5,6 @@ class TilesController < ApplicationController
   TILE_CACHE = File.join(Rails.root, 'public', 'tiles')
 
   def show
-    Rails.logger.info("in show function")
-
     # generate the tile from PostGIS
     map = SimplerTiles::Map.new do |m|
       Rails.logger.info("Setting params")
@@ -14,12 +12,10 @@ class TilesController < ApplicationController
       m.slippy params[:x].to_i, params[:y].to_i, params[:z].to_i
       m.bgcolor = '#B4E3F0'
 
-      Rails.logger.info("creating layer")
-
-      m.layer File.join(Rails.root, 'lib', 'data', 'location', 'countries', 'ne_10m_admin_0_countries_lakes.shp') do |l|
+      m.ar_layer do |l|
 
         # Grab all of the data from the shapefile
-        l.query "select * from 'ne_10m_admin_0_countries_lakes'" do |q|
+        l.query "select * from locations" do |q|
 
           # Add a style for stroke, fill, weight and set the line-join to be round
           q.styles 'stroke' => '#002240',
