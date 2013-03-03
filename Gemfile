@@ -5,6 +5,12 @@ gem 'rails', '4.0.0.beta1'
 
 # database
 gem 'pg'
+#gem 'activerecord-postgis-adapter', :github => 'dazuma/activerecord-postgis-adapter'
+gem 'activerecord-postgis-adapter', :path => '../activerecord-postgis-adapter'
+
+# gis
+gem 'rgeo-shapefile'
+gem 'simpler-tiles', :require => 'simpler_tiles', :github => 'propublica/simpler-tiles'
 
 # front end
 group :assets do

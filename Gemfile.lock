@@ -1,3 +1,15 @@
+GIT
+  remote: git://github.com/propublica/simpler-tiles.git
+  revision: f299e7fdd7c94e981b8b4a2a35da90732696d1af
+  specs:
+    simpler-tiles (0.0.7)
+
+PATH
+  remote: ../activerecord-postgis-adapter
+  specs:
+    activerecord-postgis-adapter (0.6.1.nonrelease)
+      rgeo-activerecord (~> 0.5.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -47,6 +59,8 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.5.0)
+    dbf (2.0.3)
+      fastercsv (~> 1.5.4)
     debug_inspector (0.0.2)
     ember-data-source (0.0.5)
       ember-source
@@ -62,6 +76,7 @@ GEM
     erubis (2.7.0)
     execjs (1.4.0)
       multi_json (~> 1.0)
+    fastercsv (1.5.5)
     haml (4.0.0)
       tilt
     haml-rails (0.4)
@@ -119,6 +134,14 @@ GEM
     rake (10.0.3)
     rdoc (3.12.2)
       json (~> 1.4)
+    rgeo (0.3.20)
+    rgeo-activerecord (0.5.0)
+      activerecord (>= 3.0.3)
+      arel (>= 2.0.6)
+      rgeo (>= 0.3.20)
+    rgeo-shapefile (0.2.3)
+      dbf (>= 1.7.0)
+      rgeo (>= 0.3.3)
     sass (3.2.6)
     sass-rails (4.0.0.beta1)
       railties (>= 4.0.0.beta, < 5.0)
@@ -154,6 +177,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activerecord-postgis-adapter!
   better_errors
   binding_of_caller
   coffee-rails (~> 4.0.0.beta1)
@@ -166,6 +190,8 @@ DEPENDENCIES
   pg
   quiet_assets
   rails (= 4.0.0.beta1)
+  rgeo-shapefile
   sass-rails (~> 4.0.0.beta1)
+  simpler-tiles!
   twitter-bootstrap-rails
   uglifier (>= 1.0.3)

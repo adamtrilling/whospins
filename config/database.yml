@@ -1,18 +1,22 @@
 development:
-  adapter: postgresql
-  encoding: unicode
+  adapter: postgis
   database: spinmap_development
-  pool: 5
+  host: localhost
   username: spinmap
-  password:
+  password: 
+  su_username: adam
+  su_password: 
+  postgis_extension: true
 
 test:
-  adapter: postgresql
-  encoding: unicode
+  adapter: postgis
   database: spinmap_test
-  pool: 5
+  host: localhost
   username: spinmap
-  password:
+  password: 
+  su_username: adam
+  su_password: 
+  postgis_extension: true
 
 production:
   adapter: postgresql
