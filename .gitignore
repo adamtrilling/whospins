@@ -19,5 +19,6 @@
 # ignore secrets
 /config/keys.yml
 
-# ignore lib/data - we'll download it on-demand
+# ignore shapefiles and tiles
 /lib/data
+/public/tiles
