@@ -1,6 +1,4 @@
 class Location < ActiveRecord::Base
-  attr_accessible :name, :category, :fips, :parent_id, :num_users, :area
-
   has_many :users
 
   # we don't need a full tree, so just define the necessary accessors
