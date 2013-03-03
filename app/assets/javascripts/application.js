@@ -22,10 +22,4 @@
 Spinmap = Ember.Application.create({
   rootElement: $('#app')
 });
-//= require handlebars
-//= require ember
-//= require ember-data
-//= require_self
-//= require spinmap
-Spinmap = Ember.Application.create();
 //= require_tree .
