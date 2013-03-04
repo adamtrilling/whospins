@@ -1,10 +1,12 @@
 class CreateLocations < ActiveRecord::Migration
   def change
+    execute "CREATE EXTENSION IF NOT EXISTS hstore"
+
     create_table :locations do |t|
       t.integer :parent_id
       t.string :name
       t.string :category
-      t.string :uid # for finding parent/child relationships
+      t.hstore :uids # for finding parent/child relationships
       t.integer :num_users, :default => 0
       t.multi_polygon :raw_area, :srid => 4326
       t.multi_polygon :area, :srid => 4326
@@ -13,7 +15,7 @@ class CreateLocations < ActiveRecord::Migration
     add_index :locations, :name
     add_index :locations, :parent_id
     add_index :locations, :category
-    add_index :locations, :uid
+    execute "CREATE INDEX locations_uids_index ON locations USING gin(uids)"
     add_index :locations, :num_users
     add_index :locations, :raw_area, :spatial => true
     add_index :locations, :area, :spatial => true
