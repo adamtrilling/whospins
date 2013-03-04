@@ -4,7 +4,7 @@ class CreateLocations < ActiveRecord::Migration
       t.integer :parent_id
       t.string :name
       t.string :category
-      t.string :fips
+      t.string :uid # for finding parent/child relationships
       t.integer :num_users, :default => 0
       t.multi_polygon :raw_area, :srid => 4326
       t.multi_polygon :area, :srid => 4326
@@ -13,7 +13,7 @@ class CreateLocations < ActiveRecord::Migration
     add_index :locations, :name
     add_index :locations, :parent_id
     add_index :locations, :category
-    add_index :locations, :fips
+    add_index :locations, :uid
     add_index :locations, :num_users
     add_index :locations, :raw_area, :spatial => true
     add_index :locations, :area, :spatial => true

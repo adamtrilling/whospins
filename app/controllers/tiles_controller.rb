@@ -3,27 +3,54 @@ require 'simpler_tiles'
 class TilesController < ApplicationController
 
   TILE_CACHE = File.join(Rails.root, 'public', 'tiles')
+  COUNTRY_LIST = ['United States', 'Canada']
 
   def show
-    # generate the tile from PostGIS
+    if (Rails.env == 'development')
+      # tell the browser not to cache tiles in dev - otherwise, changes
+      # to this function don't do anything.
+      expires_now
+    end
+
     map = SimplerTiles::Map.new do |m|
-      Rails.logger.info("Setting params")
       m.srs     = "EPSG:4326"
       m.slippy params[:x].to_i, params[:y].to_i, params[:z].to_i
       m.bgcolor = '#B4E3F0'
 
+      # find locations in the current buffer
+      buffered_locations = Location.where("area && 'SRID=4326;#{m.buffered_bounds.reproject(m.srs, 'epsg:4326').to_wkt}'")
+
+      # find the countries that are and aren't supported by the app
+      unsupported_countries = buffered_locations.where(:category => 'country').where("name NOT IN (?)", COUNTRY_LIST)
+      supported_countries = buffered_locations.where(:category => 'country').where(:name => COUNTRY_LIST)
+
       m.ar_layer do |l|
 
-        # Grab all of the data from the shapefile
-        l.query "select * from locations" do |q|
-
-          # Add a style for stroke, fill, weight and set the line-join to be round
+        l.query unsupported_countries.to_sql do |q|
+          # normal black border, gray fill
           q.styles 'stroke' => '#002240',
                    'weight' => '1',
                 'line-join' => 'round',
                      'fill' => '#CCCCCC'
         end
+
+        # states/provinces in supported countries
+        l.query buffered_locations.where(:parent_id => supported_countries.to_a.map(&:id)).to_sql do |q|
+          # thin white border, gray fill
+          q.styles 'stroke' => '#F0F0F0',
+                   'weight' => '.5',
+                'line-join' => 'round',
+                     'fill' => '#CCCCCC'          
+        end
+        l.query supported_countries.to_sql do |q|
+          # normal black border, transparent gray fill so we don't cover up the state lines
+          q.styles 'stroke' => '#002240',
+                   'weight' => '1',
+                'line-join' => 'round',
+                     'fill' => '#CCCCCC00'          
+        end
       end
+
     end
 
     Rails.logger.info("writing file")
