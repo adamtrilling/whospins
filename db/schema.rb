@@ -16,12 +16,13 @@ ActiveRecord::Schema.define(version: 20130302024307) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
+  enable_extension "hstore"
 
   create_table "locations", force: true do |t|
     t.integer "parent_id"
     t.string  "name"
     t.string  "category"
-    t.string  "uid"
+    t.hstore  "uids"
     t.integer "num_users",                                               default: 0
     t.spatial "raw_area",  limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial "area",      limit: {:srid=>4326, :type=>"multi_polygon"}
@@ -33,7 +34,7 @@ ActiveRecord::Schema.define(version: 20130302024307) do
   add_index "locations", ["num_users"], :name => "index_locations_on_num_users"
   add_index "locations", ["parent_id"], :name => "index_locations_on_parent_id"
   add_index "locations", ["raw_area"], :name => "index_locations_on_raw_area", :spatial => true
-  add_index "locations", ["uid"], :name => "index_locations_on_uid"
+  add_index "locations", ["uids"], :name => "locations_uids_index"
 
   create_table "users", force: true do |t|
     t.string   "provider"

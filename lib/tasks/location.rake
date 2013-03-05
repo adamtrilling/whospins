@@ -2,7 +2,51 @@ namespace :location do
   desc "Load data from shapefiles from scratch"
   task :load => :environment do
 
-    def download_file(cat, attrs = {})
+    DATA_DIR = Rails.root.join('lib', 'data', 'location')
+    SRID = Location.connection.select_all("SELECT Find_SRID('public', 'locations', 'raw_area') AS srid").first["srid"]
+
+    puts "Removing existing data"
+    Location.destroy_all
+    FileUtils.rm_rf(File.join(Rails.root, 'public', 'tiles'))
+
+    puts "Loading data - SRID = #{SRID}"
+
+    # this is weird and abuses metaprogramming a bit.  but it saves a lot of code 
+    # repetition.  the processor needs to return either the location it built for 
+    # the current record, or nil if there is a failure or an intentional skip.  if
+    # nil is returned, the area isn't added to the database.
+    { 
+      'country' => {
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries_lakes.zip',
+        'zipfile' => 'ne_10m_admin_0_countries_lakes.zip',
+        'shapefile' => 'ne_10m_admin_0_countries_lakes.shp',
+        'processor' => Proc.new { |category, record|
+          Location.create!(
+            :name => record["name"],
+            :category => category,
+            :uids => { :iso_a2 => record["iso_a2"] },
+            :parent_id => nil)
+        }
+      },
+      'state' => {
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_1_states_provinces_lakes_shp.zip',
+        'zipfile' => 'ne_10m_admin_1_states_provinces_lakes_shp.zip',
+        'shapefile' => 'ne_10m_admin_1_states_provinces_lakes_shp.shp',
+        'processor' => Proc.new { |category, record| 
+
+          # skip the US - that comes from TIGER/LINE
+          next if record["iso_a2"] == "US"
+
+          parent = Location.where("category = 'country' AND uids -> 'iso_a2' = '#{record["iso_a2"]}'").first
+
+          Location.create!(
+            :name => record["name"],
+            :category => category,
+            :uids => { :hasc => record["code_hasc"] },
+            :parent_id => parent.nil? ? nil : parent.id)
+        }
+      }
+    }.each do |cat, attrs|
       puts "Downloading shapefile #{attrs['url']}"
       unless (File.directory?(File.join(DATA_DIR, cat)))
         Dir.mkdir(File.join(DATA_DIR, cat))
@@ -13,36 +57,8 @@ namespace :location do
         unzip_cmd = "unzip -d #{DATA_DIR}/#{cat}/ #{DATA_DIR}/#{cat}/#{attrs['zipfile']}"
         system curl_cmd
         system unzip_cmd
-      end      
-    end
+      end
 
-    DATA_DIR = Rails.root.join('lib', 'data', 'location')
-    SRID = Location.connection.select_all("SELECT Find_SRID('public', 'locations', 'raw_area') AS srid").first["srid"]
-    TOLERANCE = 1
-    SIMPLIFY = "ST_Simplify(raw_area, #{TOLERANCE})"
-
-    puts "Removing existing data"
-    Location.destroy_all
-    FileUtils.rm_rf(File.join(Rails.root, 'public', 'tiles'))
-
-    puts "Loading data - SRID = #{SRID}"
-
-    # handle naturalearth data
-    { 
-      'country' => {
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries_lakes.zip',
-        'zipfile' => 'ne_10m_admin_0_countries_lakes.zip',
-        'shapefile' => 'ne_10m_admin_0_countries_lakes.shp',
-        'uid' => 'iso_a2'
-      },
-      'state' => {
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_1_states_provinces_lakes_shp.zip',
-        'zipfile' => 'ne_10m_admin_1_states_provinces_lakes_shp.zip',
-        'shapefile' => 'ne_10m_admin_1_states_provinces_lakes_shp.shp',
-        'parent_uid' => 'iso_a2'
-      }
-    }.each do |cat, attrs|
-      download_file(cat, attrs)
       RGeo::Shapefile::Reader.open("#{DATA_DIR}/#{cat}/#{attrs['shapefile']}") do |file|
         puts "#{cat} file contains #{file.num_records} records."
 
@@ -55,17 +71,17 @@ namespace :location do
             parent = Location.where(:uid => record[attrs['parent_uid']]).first
           end
 
-          loc = Location.create!(
-            :name => record["name"],
-            :category => cat,
-            :uid => attrs.has_key?('uid') ? record[attrs['uid']] : nil,
-            :parent_id => parent.nil? ? nil : parent.id
-          )
+          loc = attrs['processor'].call(cat, record)
           puts "done"
 
-          # naturalearth data is already simplified enough
-          loc.connection.update_sql("UPDATE locations SET raw_area = ST_GeomFromText('#{record.geometry.as_text}', #{SRID}) WHERE id = #{country.id}")
-          loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
+          unless (loc.nil?)
+            loc.connection.update_sql("UPDATE locations SET raw_area = ST_GeomFromText('#{record.geometry.as_text}', #{SRID}) WHERE id = #{loc.id}")
+            if (attrs['tolerance'])
+              loc.connection.update_sql("UPDATE locations SET area = ST_Simplify(raw_area, #{attrs['tolerance']}) WHERE id = #{loc.id}")
+            else
+              loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
+            end
+          end
           i += 1
         end
       end

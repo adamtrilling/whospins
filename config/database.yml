@@ -6,7 +6,7 @@ development:
   password: 
   su_username: adam
   su_password: 
-  postgis_extension: true
+  postgis_extension: ['postgis', 'hstore']
 
 test:
   adapter: postgis

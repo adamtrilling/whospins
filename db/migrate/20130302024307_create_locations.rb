@@ -1,7 +1,5 @@
 class CreateLocations < ActiveRecord::Migration
   def change
-    execute "CREATE EXTENSION IF NOT EXISTS hstore"
-
     create_table :locations do |t|
       t.integer :parent_id
       t.string :name
