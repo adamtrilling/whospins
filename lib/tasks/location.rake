@@ -15,8 +15,10 @@ namespace :location do
     # repetition.  the processor needs to return either the location it built for 
     # the current record, or nil if there is a failure or an intentional skip.  if
     # nil is returned, the area isn't added to the database.
-    { 
-      'country' => {
+    shapefiles = [ 
+      {
+        'category' => 'country',
+        'area_type' => 'area',
         'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries_lakes.zip',
         'zipfile' => 'ne_10m_admin_0_countries_lakes.zip',
         'shapefile' => 'ne_10m_admin_0_countries_lakes.shp',
@@ -24,29 +26,55 @@ namespace :location do
           Location.create!(
             :name => record["name"],
             :category => category,
-            :uids => { :iso_a2 => record["iso_a2"] },
+            :props => { 'iso_a2' => record["iso_a2"] },
             :parent_id => nil)
         }
       },
-      'state' => {
+      {
+        'category' => 'state',
+        'area_type' => 'area',
         'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_1_states_provinces_lakes_shp.zip',
         'zipfile' => 'ne_10m_admin_1_states_provinces_lakes_shp.zip',
         'shapefile' => 'ne_10m_admin_1_states_provinces_lakes_shp.shp',
         'processor' => Proc.new { |category, record| 
 
-          # skip the US - that comes from TIGER/LINE
-          next if record["iso_a2"] == "US"
+          parent = Location.where("category = 'country' AND props -> 'iso_a2' = '#{record["iso_a2"]}'").first
 
-          parent = Location.where("category = 'country' AND uids -> 'iso_a2' = '#{record["iso_a2"]}'").first
+          # only the US uses code_local, from which the FIPS code can be parsed
+          uids = { 'hasc' => record["code_hasc"] }
+          if (record['iso_a2'] == 'US')
+            uids['fips'] = record["code_local"][2..3]
+          end
 
           Location.create!(
             :name => record["name"],
             :category => category,
-            :uids => { :hasc => record["code_hasc"] },
+            :props => uids,
+            :parent_id => parent.nil? ? nil : parent.id)
+        }
+      },
+      {
+        'category' => 'city-point',
+        'area_type' => 'point',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_populated_places.zip',
+        'zipfile' => 'ne_10m_populated_places.zip',
+        'shapefile' => 'ne_10m_populated_places.shp',
+        'processor' => Proc.new { |category, record| 
+          # these are going to be displayed on the map, but not selectable.  so 
+          # country is fine as a parent
+          parent = Location.where("category = 'country' AND props -> 'iso_a2' = '#{record["iso_a2"]}'").first
+          
+          Location.create!(
+            :name => record["name"],
+            :category => 'city-point',
+            :props => {'class' => record['featurecla'], 'pop' => record['pop_max']},
             :parent_id => parent.nil? ? nil : parent.id)
         }
       }
-    }.each do |cat, attrs|
+    ]
+
+    shapefiles.each do |attrs|
+      cat = attrs['category']
       puts "Downloading shapefile #{attrs['url']}"
       unless (File.directory?(File.join(DATA_DIR, cat)))
         Dir.mkdir(File.join(DATA_DIR, cat))
@@ -75,12 +103,16 @@ namespace :location do
           puts "done"
 
           unless (loc.nil?)
-            loc.connection.update_sql("UPDATE locations SET raw_area = ST_GeomFromText('#{record.geometry.as_text}', #{SRID}) WHERE id = #{loc.id}")
-            if (attrs['tolerance'])
-              loc.connection.update_sql("UPDATE locations SET area = ST_Simplify(raw_area, #{attrs['tolerance']}) WHERE id = #{loc.id}")
+            if (attrs['area_type'] == 'area')
+              loc.connection.update_sql("UPDATE locations SET raw_area = ST_GeomFromText('#{record.geometry.as_text}', #{SRID}) WHERE id = #{loc.id}")
+              if (attrs['tolerance'])
+                loc.connection.update_sql("UPDATE locations SET area = ST_Simplify(raw_area, #{attrs['tolerance']}) WHERE id = #{loc.id}")
+              else
+                loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
+              end
             else
-              loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
-            end
+              loc.connection.update_sql("UPDATE locations SET point = ST_GeomFromText('#{record.geometry.as_text}', #{SRID}) WHERE id = #{loc.id}")
+            end              
           end
           i += 1
         end

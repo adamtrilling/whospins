@@ -25,8 +25,9 @@ class TilesController < ApplicationController
       supported_countries = buffered_locations.where(:category => 'country').where(:name => COUNTRY_LIST)
 
       m.ar_layer do |l|
+        Rails.logger.info "unsupported_countries sql = #{unsupported_countries.to_sql}"
 
-        l.query unsupported_countries.to_sql do |q|
+        l.query unsupported_countries.select("area").to_sql do |q|
           # normal black border, gray fill
           q.styles 'stroke' => '#002240',
                    'weight' => '1',
@@ -35,27 +36,30 @@ class TilesController < ApplicationController
         end
 
         # states/provinces in supported countries
-        l.query buffered_locations.where(:parent_id => supported_countries.to_a.map(&:id)).to_sql do |q|
+        l.query buffered_locations.select("area").where(:parent_id => supported_countries.to_a.map(&:id)).to_sql do |q|
           # thin white border, gray fill
           q.styles 'stroke' => '#F0F0F0',
                    'weight' => '.5',
                 'line-join' => 'round',
                      'fill' => '#CCCCCC'          
         end
-        l.query supported_countries.to_sql do |q|
+        l.query supported_countries.select("name", "point").to_sql do |q|
           # normal black border, transparent gray fill so we don't cover up the state lines
           q.styles 'stroke' => '#002240',
                    'weight' => '1',
                 'line-join' => 'round',
                      'fill' => '#CCCCCC00'          
         end
+
+        # # cities that get labeled
+        # l.query buffered_locations.where(:category => 'city-point').where("(props -> 'pop')::int >= 100000").to_sql do |q|
+        #   q.styles 'text-field' => 'name'
+        # end
       end
 
     end
 
-    Rails.logger.info("writing file")
     png = map.to_png
-    Rails.logger.info("size = #{png.size}")    
     if (png)
       # cache the tile such that future accesses won't even hit rails
       unless (File.directory?(File.join(TILE_CACHE)))
@@ -74,7 +78,6 @@ class TilesController < ApplicationController
         file.write(map.to_png)
       end
 
-      Rails.logger.info("returning tile")
       # send the tile to the browser
       send_data map.to_png, :type => "image/png", :filename => "#{params[:y]}.png"
     else

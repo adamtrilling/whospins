@@ -22,10 +22,11 @@ ActiveRecord::Schema.define(version: 20130302024307) do
     t.integer "parent_id"
     t.string  "name"
     t.string  "category"
-    t.hstore  "uids"
+    t.hstore  "props"
     t.integer "num_users",                                               default: 0
     t.spatial "raw_area",  limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial "area",      limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial "point",     limit: {:srid=>4326, :type=>"point"}
   end
 
   add_index "locations", ["area"], :name => "index_locations_on_area", :spatial => true
@@ -33,8 +34,9 @@ ActiveRecord::Schema.define(version: 20130302024307) do
   add_index "locations", ["name"], :name => "index_locations_on_name"
   add_index "locations", ["num_users"], :name => "index_locations_on_num_users"
   add_index "locations", ["parent_id"], :name => "index_locations_on_parent_id"
+  add_index "locations", ["point"], :name => "index_locations_on_point", :spatial => true
+  add_index "locations", ["props"], :name => "locations_uids_index"
   add_index "locations", ["raw_area"], :name => "index_locations_on_raw_area", :spatial => true
-  add_index "locations", ["uids"], :name => "locations_uids_index"
 
   create_table "users", force: true do |t|
     t.string   "provider"
