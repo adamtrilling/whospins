@@ -62,12 +62,12 @@ namespace :location do
         'processor' => Proc.new { |category, record| 
           # these are going to be displayed on the map, but not selectable.  so 
           # country is fine as a parent
-          parent = Location.where("category = 'country' AND props -> 'iso_a2' = '#{record["iso_a2"]}'").first
+          parent = Location.where("category = 'country' AND props -> 'iso_a2' = '#{record["ISO_A2"]}'").first
           
           Location.create!(
-            :name => record["name"],
+            :name => record["NAME"].force_encoding('ISO-8859-1').encode('UTF-8'),
             :category => 'city-point',
-            :props => {'class' => record['featurecla'], 'pop' => record['pop_max']},
+            :props => {'class' => record['FEATURECLA'], 'pop' => record['POP_MAX']},
             :parent_id => parent.nil? ? nil : parent.id)
         }
       }

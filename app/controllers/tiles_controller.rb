@@ -18,14 +18,13 @@ class TilesController < ApplicationController
       m.bgcolor = '#B4E3F0'
 
       # find locations in the current buffer
-      buffered_locations = Location.where("area && 'SRID=4326;#{m.buffered_bounds.reproject(m.srs, 'epsg:4326').to_wkt}'")
+      buffered_locations = Location.where("area && 'SRID=4326;#{m.buffered_bounds.reproject(m.srs, 'epsg:4326').to_wkt}'")      
 
       # find the countries that are and aren't supported by the app
       unsupported_countries = buffered_locations.where(:category => 'country').where("name NOT IN (?)", COUNTRY_LIST)
       supported_countries = buffered_locations.where(:category => 'country').where(:name => COUNTRY_LIST)
 
       m.ar_layer do |l|
-        Rails.logger.info "unsupported_countries sql = #{unsupported_countries.to_sql}"
 
         l.query unsupported_countries.select("area").to_sql do |q|
           # normal black border, gray fill
@@ -43,7 +42,7 @@ class TilesController < ApplicationController
                 'line-join' => 'round',
                      'fill' => '#CCCCCC'          
         end
-        l.query supported_countries.select("name", "point").to_sql do |q|
+        l.query supported_countries.select("area").to_sql do |q|
           # normal black border, transparent gray fill so we don't cover up the state lines
           q.styles 'stroke' => '#002240',
                    'weight' => '1',
@@ -51,10 +50,13 @@ class TilesController < ApplicationController
                      'fill' => '#CCCCCC00'          
         end
 
-        # # cities that get labeled
-        # l.query buffered_locations.where(:category => 'city-point').where("(props -> 'pop')::int >= 100000").to_sql do |q|
-        #   q.styles 'text-field' => 'name'
-        # end
+        # cities that get labeled
+        l.query Location.select("name", "point").where(:category => 'city-point').where("(props -> 'pop')::int >= 1000000").where("point && 'SRID=4326;#{m.buffered_bounds.reproject(m.srs, 'epsg:4326').to_wkt}'").to_sql do |q|
+          q.styles 'text-field' => 'name',
+                       'radius' => '1',
+                         'fill' => '#000000',
+            'text-stroke-color' => '#000000'
+        end
       end
 
     end
