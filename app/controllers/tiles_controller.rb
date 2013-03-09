@@ -16,6 +16,7 @@ class TilesController < ApplicationController
       m.srs     = "EPSG:4326"
       m.slippy params[:x].to_i, params[:y].to_i, params[:z].to_i
       m.bgcolor = '#B4E3F0'
+      m.buffer = 32
 
       # find locations in the current buffer
       buffered_locations = Location.where("area && 'SRID=4326;#{m.buffered_bounds.reproject(m.srs, 'epsg:4326').to_wkt}'")      
@@ -35,27 +36,57 @@ class TilesController < ApplicationController
         end
 
         # states/provinces in supported countries
-        l.query buffered_locations.select("area").where(:parent_id => supported_countries.to_a.map(&:id)).to_sql do |q|
+        l.query buffered_locations.select("name, area").where(:parent_id => supported_countries.to_a.map(&:id)).to_sql do |q|
           # thin white border, gray fill
-          q.styles 'stroke' => '#F0F0F0',
-                   'weight' => '.5',
-                'line-join' => 'round',
-                     'fill' => '#CCCCCC'          
+          style = {
+            'stroke' => '#F0F0F0',
+            'weight' => '.5',
+            'line-join' => 'round',
+            'fill' => '#CCCCCC'
+          }
+
+          if ((4..5).include?(params[:z].to_i))
+            style['text-field'] = 'name'       
+            style['text-stroke-color'] = '#000000'
+          end
+
+          q.styles style
+
         end
-        l.query supported_countries.select("area").to_sql do |q|
+        l.query supported_countries.select("name, area").to_sql do |q|
           # normal black border, transparent gray fill so we don't cover up the state lines
-          q.styles 'stroke' => '#002240',
-                   'weight' => '1',
-                'line-join' => 'round',
-                     'fill' => '#CCCCCC00'          
+          style = {
+            'stroke' => '#002240',
+            'weight' => '1',
+            'line-join' => 'round',
+            'fill' => '#CCCCCC00'
+          }
+
+          if (params[:z].to_i < 4)
+            style['text-field'] = 'name'       
+            style['text-stroke-color'] = '#000000'
+          end
+
+          q.styles style
+
         end
 
-        # cities that get labeled
-        l.query Location.select("name", "point").where(:category => 'city-point').where("(props -> 'pop')::int >= 1000000").where("point && 'SRID=4326;#{m.buffered_bounds.reproject(m.srs, 'epsg:4326').to_wkt}'").to_sql do |q|
-          q.styles 'text-field' => 'name',
-                       'radius' => '1',
-                         'fill' => '#000000',
-            'text-stroke-color' => '#000000'
+        # cities only get labled if their population is high enough for the zoom
+        city_labels = {
+          '6' => 100000,
+          '7' => 50000,
+          '8' => 25000,
+          '9' => 25000,
+          '10' => 25000,
+          '11' => 25000
+        }
+        if (city_labels.has_key?(params[:z]))
+          l.query Location.select("name", "point").where(:category => 'city-point').where("(props -> 'pop')::int >= #{city_labels[params[:z]]}").where("point && 'SRID=4326;#{m.buffered_bounds.reproject(m.srs, 'epsg:4326').to_wkt}'").to_sql do |q|
+            q.styles 'text-field' => 'name',
+                           'fill' => '#000000',
+              'text-stroke-color' => '#000000',
+              'font' => "serif ultra-light 12px"
+          end
         end
       end
 
