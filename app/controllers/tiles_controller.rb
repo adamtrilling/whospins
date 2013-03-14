@@ -25,30 +25,34 @@ class TilesController < ApplicationController
       unsupported_countries = buffered_locations.where(:category => 'country').where("name NOT IN (?)", COUNTRY_LIST)
       supported_countries = buffered_locations.where(:category => 'country').where(:name => COUNTRY_LIST)
 
+      line_style = {
+        'stroke' => '#002240',
+        'weight' => '1',
+        'line-join' => 'round',
+        'fill' => '#CCCCCC'
+      }
+
+      label_style = {
+        'text-field' => 'name',
+        'text-stroke-color' => '#000000',
+        'font' => "Helvetica CY 12px",
+        'letter-spacing' => '2'
+      }
+
       m.ar_layer do |l|
 
         l.query unsupported_countries.select("area").to_sql do |q|
           # normal black border, gray fill
-          q.styles 'stroke' => '#002240',
-                   'weight' => '1',
-                'line-join' => 'round',
-                     'fill' => '#CCCCCC'
+          q.styles line_style
         end
 
         # states/provinces in supported countries
         l.query buffered_locations.select("name, area").where(:parent_id => supported_countries.to_a.map(&:id)).to_sql do |q|
           # thin white border, gray fill
-          style = {
-            'stroke' => '#F0F0F0',
-            'weight' => '.5',
-            'line-join' => 'round',
-            'fill' => '#CCCCCC'
-          }
+          style = line_style.merge('stroke' => '#F0F0F0')
 
           if ((4..5).include?(params[:z].to_i))
-            style['text-field'] = 'name'       
-            style['text-stroke-color'] = '#000000'
-            style['font'] = "normal ultra-light ultra-expanded 12px"
+            style = style.merge(label_style)
           end
 
           q.styles style
@@ -56,17 +60,10 @@ class TilesController < ApplicationController
         end
         l.query supported_countries.select("name, area").to_sql do |q|
           # normal black border, transparent gray fill so we don't cover up the state lines
-          style = {
-            'stroke' => '#002240',
-            'weight' => '1',
-            'line-join' => 'round',
-            'fill' => '#CCCCCC00'
-          }
+          style = line_style.merge('fill' => '#CCCCCC00')
 
           if (params[:z].to_i < 4)
-            style['text-field'] = 'name'       
-            style['text-stroke-color'] = '#000000'
-            style['font'] = "Georgia ultra-light ultra-expanded 12px"
+            style = style.merge(label_style)
           end
 
           q.styles style
@@ -84,10 +81,7 @@ class TilesController < ApplicationController
         }
         if (city_labels.has_key?(params[:z]))
           l.query Location.select("name", "point").where(:category => 'city-point').where("(props -> 'pop')::int >= #{city_labels[params[:z]]}").where("point && 'SRID=4326;#{m.buffered_bounds.reproject(m.srs, 'epsg:4326').to_wkt}'").to_sql do |q|
-            q.styles 'text-field' => 'name',
-                           'fill' => '#000000',
-              'text-stroke-color' => '#000000',
-              'font' => "Georgia ultra-light ultra-expanded 12px"
+            q.styles label_style
           end
         end
       end
