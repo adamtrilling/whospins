@@ -22,6 +22,7 @@ namespace :location do
         'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries_lakes.zip',
         'zipfile' => 'ne_10m_admin_0_countries_lakes.zip',
         'shapefile' => 'ne_10m_admin_0_countries_lakes.shp',
+        'tolerance' => '1',
         'processor' => Proc.new { |category, record|
           Location.create!(
             :name => record["name"],
@@ -36,6 +37,7 @@ namespace :location do
         'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_1_states_provinces_lakes_shp.zip',
         'zipfile' => 'ne_10m_admin_1_states_provinces_lakes_shp.zip',
         'shapefile' => 'ne_10m_admin_1_states_provinces_lakes_shp.shp',
+        'tolerance' => '1',
         'processor' => Proc.new { |category, record| 
 
           parent = Location.where("category = 'country' AND props -> 'iso_a2' = '#{record["iso_a2"]}'").first
@@ -54,7 +56,7 @@ namespace :location do
         }
       },
       {
-        'category' => 'city-point',
+        'category' => 'city',
         'area_type' => 'point',
         'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_populated_places.zip',
         'zipfile' => 'ne_10m_populated_places.zip',
@@ -66,7 +68,7 @@ namespace :location do
           
           Location.create!(
             :name => record["NAME"].force_encoding('ISO-8859-1').encode('UTF-8'),
-            :category => 'city-point',
+            :category => category,
             :props => {'class' => record['FEATURECLA'], 'pop' => record['POP_MAX']},
             :parent_id => parent.nil? ? nil : parent.id)
         }
