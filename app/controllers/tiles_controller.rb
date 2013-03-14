@@ -48,6 +48,7 @@ class TilesController < ApplicationController
           if ((4..5).include?(params[:z].to_i))
             style['text-field'] = 'name'       
             style['text-stroke-color'] = '#000000'
+            style['font'] = "normal ultra-light ultra-expanded 12px"
           end
 
           q.styles style
@@ -65,6 +66,7 @@ class TilesController < ApplicationController
           if (params[:z].to_i < 4)
             style['text-field'] = 'name'       
             style['text-stroke-color'] = '#000000'
+            style['font'] = "Georgia ultra-light ultra-expanded 12px"
           end
 
           q.styles style
@@ -85,7 +87,7 @@ class TilesController < ApplicationController
             q.styles 'text-field' => 'name',
                            'fill' => '#000000',
               'text-stroke-color' => '#000000',
-              'font' => "serif ultra-light 12px"
+              'font' => "Georgia ultra-light ultra-expanded 12px"
           end
         end
       end
