@@ -12,4 +12,7 @@
  *= require_tree .
  */
 
-#map { height: 800px; }
+#map { 
+  height: 400px; 
+  width: 800px;
+}
