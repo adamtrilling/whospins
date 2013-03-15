@@ -1,5 +1,23 @@
 Spinmap.ApplicationView = Ember.View.extend({
   didInsertElement: function() {
+    function getColor(n) {
+      return n > 50   ? '#EDF8FB' :
+             n > 20   ? '#B3CDE3' :
+             n > 10   ? '#8C96C6' :
+                      '#EDF8FB';
+    }
+
+    function style(feature) {
+      return {
+        fillColor: getColor(feature.properties.num_users),
+        weight: 2,
+        opacity: 0.5,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+      };
+    }
+
     var map = L.map('map', {
       minZoom: 3,
       maxZoom: 11,
@@ -15,7 +33,7 @@ Spinmap.ApplicationView = Ember.View.extend({
       dataType: 'json',
       success: function(response) {
         console.log("adding geojson layer");
-        geojsonLayer = L.geoJson(response).addTo(map);
+        geojsonLayer = L.geoJson(response, {style: style}).addTo(map);
       },
     });
   }
