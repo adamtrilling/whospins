@@ -9,4 +9,6 @@ Spinmap::Application.routes.draw do
   get '/auth/failure' => 'sessions#failure'
 
   get '/tiles/:z/:x/:y.png' => 'tiles#show'
+
+  resources :locations, :only => [:index]
 end

@@ -20,4 +20,15 @@ class Location < ActiveRecord::Base
       end
     end
   end
+
+  def to_a
+    return [] if area.nil?
+
+    # stolen from rgeo-geojson
+    point_encoder_ = ::Proc.new{ |p_| [p_.x, p_.y] }
+    area.map { |poly_| 
+      [poly_.exterior_ring.points.map(&point_encoder_)] + 
+      poly_.interior_rings.map{ |r_| r_.points.map(&point_encoder_) } 
+    }
+  end
 end
