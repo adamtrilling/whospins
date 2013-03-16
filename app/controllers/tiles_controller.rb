@@ -34,9 +34,12 @@ class TilesController < ApplicationController
 
       label_style = {
         'text-field' => 'name',
+        'weight' => '0.5',
         'text-stroke-color' => '#000000',
-        'font' => "Helvetica CY 12px",
-        'letter-spacing' => '2'
+        'text-outline-color' => '#ffffffcc',
+        'text-outline-weight' => '2',
+        'font' => 'Avenir Light, Light Oblique 8',
+        'letter-spacing' => '1'
       }
 
       m.ar_layer do |l|
@@ -80,7 +83,9 @@ class TilesController < ApplicationController
           '11' => 25000
         }
         if (city_labels.has_key?(params[:z]))
-          l.query buffered_locations.select("name", "point").where(:category => 'city').where("(props -> 'pop')::int >= #{city_labels[params[:z]]}").to_sql do |q|
+          # temporary buffering until cities have area too
+          city_locations = Location.where("point && 'SRID=4326;#{m.buffered_bounds.reproject(m.srs, 'epsg:4326').to_wkt}'")
+          l.query city_locations.select("name", "point").where(:category => 'city').where("(props -> 'pop')::int >= #{city_labels[params[:z]]}").to_sql do |q|
             q.styles label_style
           end
         end
