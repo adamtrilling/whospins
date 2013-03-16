@@ -22,7 +22,7 @@ namespace :location do
         'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries_lakes.zip',
         'zipfile' => 'ne_10m_admin_0_countries_lakes.zip',
         'shapefile' => 'ne_10m_admin_0_countries_lakes.shp',
-        'tolerance' => '500',
+        'tolerance' => '1100',
         'processor' => Proc.new { |category, record|
           # skip Antarctica - PostGIS doesn't know how to reproject it
           next if (record["name"] == 'Antarctica')
@@ -40,7 +40,7 @@ namespace :location do
         'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_1_states_provinces_lakes_shp.zip',
         'zipfile' => 'ne_10m_admin_1_states_provinces_lakes_shp.zip',
         'shapefile' => 'ne_10m_admin_1_states_provinces_lakes_shp.shp',
-        'tolerance' => '500',
+        'tolerance' => '1100',
         'processor' => Proc.new { |category, record| 
           next if (record['admin'] == 'Antarctica')
 
