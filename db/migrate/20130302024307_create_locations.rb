@@ -8,7 +8,6 @@ class CreateLocations < ActiveRecord::Migration
       t.integer :num_users, :default => 0
       t.multi_polygon :raw_area, :srid => 4326
       t.multi_polygon :area, :srid => 4326
-      t.point :point, :srid => 4326
     end
 
     add_index :locations, :name
@@ -18,7 +17,6 @@ class CreateLocations < ActiveRecord::Migration
     add_index :locations, :num_users
     add_index :locations, :raw_area, :spatial => true
     add_index :locations, :area, :spatial => true
-    add_index :locations, :point, :spatial => true
 
     add_column :users, :location_id, :integer
     add_index :users, :location_id
