@@ -49,7 +49,7 @@ namespace :location do
           parent = Location.where("category = 'country' AND props -> 'iso_a2' = '#{record["iso_a2"]}'").first
 
           # only the US uses code_local, from which the FIPS code can be parsed
-          uids = { 'hasc' => record["code_hasc"] }
+          uids = { 'postal' => record['postal'] }
           if (record['iso_a2'] == 'US')
             uids['fips'] = record["code_local"][2..3]
           end
@@ -61,29 +61,6 @@ namespace :location do
             :parent_id => parent.nil? ? nil : parent.id)]
         }
       },
-      {
-        'category' => 'city',
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_populated_places.zip',
-        'zipfile' => 'ne_10m_populated_places.zip',
-        'shapefile' => 'ne_10m_populated_places.shp',
-        'srid' => '4326',
-        'debug' => true,
-        'processor' => Proc.new { |category, record|
-          country = Location.where("category = 'country' AND name = '#{record["ADM0NAME"]}'").first
-          
-          # there are cities in here for which the country doesn't exist (?!)
-          next if country.nil?
-
-          state = Location.where("category = 'state' AND parent_id = #{country.id} AND name = '#{record["ADM1NAME"].gsub(/'/, "''").force_encoding('ISO-8859-1').encode('UTF-8')}'").first
-        
-
-          [Location.create!(
-            :name => record["NAME"].force_encoding('ISO-8859-1').encode('UTF-8'),
-            :category => category,
-            :props => {'class' => record['FEATURECLA'], 'pop' => record['POP_MAX']},
-            :parent_id => state.nil? ? nil : state.id)]
-        }
-      }
     ]
 
     # the US Census distributes files that are named
@@ -173,6 +150,43 @@ namespace :location do
           i += 1
         end
       end
+    end
+
+    # the best city list I could find is a TSV from geonames.  it isn't a shapefile, but 
+    # shapes can be determined from points
+    url = 'http://download.geonames.org/export/dump/cities1000.zip'
+    zipfile = 'cities1000.zip'
+    tsvfile = 'cities1000.txt'
+    cat = 'city'
+    puts "Downloading file #{url}"
+    unless (File.directory?(File.join(DATA_DIR, cat)))
+      Dir.mkdir(File.join(DATA_DIR, cat))
+    end
+
+    unless (File.file?(File.join(DATA_DIR, cat, tsvfile)))
+      curl_cmd = "curl -L -o #{DATA_DIR}/#{cat}/#{tsvfile} #{url}"
+      unzip_cmd = "unzip -d #{DATA_DIR}/#{cat}/ #{DATA_DIR}/#{cat}/#{zipfile}"
+      system curl_cmd
+      system unzip_cmd
+    end
+
+    File.open("#{DATA_DIR}/#{cat}/#{tsvfile}").each do |record|
+      attrs = record.split("\t")
+
+      country = Location.where("category = 'country' AND props -> 'iso_a2' = #{attrs[8]}").first
+
+      # TODO: this only works for countries where the ISO code is used for admin1.  
+      state = Location.where("category = 'state' AND props -> 'postal' = #{attrs[9]}")
+
+      loc = Location.create!(
+        :name => attrs[1],
+        :category => cat,
+        :props => {'pop' => attrs[14]},
+        :parent_id => state.empty? ? country.id : state.first.id
+      )
+
+      loc.connection.update_sql("UPDATE locations SET raw_area = ST_Multi(ST_Transform(ST_Expand(ST_Transform(ST_GeomFromText('SRID=4326;POINT(#{attrs[5]} #{attrs[4]})'), 900913), 1000), #{DB_SRID})) WHERE id = #{loc.id}")
+      loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
     end
   end
 end
