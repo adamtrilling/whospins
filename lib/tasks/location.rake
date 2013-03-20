@@ -164,28 +164,41 @@ namespace :location do
     end
 
     unless (File.file?(File.join(DATA_DIR, cat, tsvfile)))
-      curl_cmd = "curl -L -o #{DATA_DIR}/#{cat}/#{tsvfile} #{url}"
+      curl_cmd = "curl -L -o #{DATA_DIR}/#{cat}/#{zipfile} #{url}"
       unzip_cmd = "unzip -d #{DATA_DIR}/#{cat}/ #{DATA_DIR}/#{cat}/#{zipfile}"
       system curl_cmd
       system unzip_cmd
     end
 
     File.open("#{DATA_DIR}/#{cat}/#{tsvfile}").each do |record|
-      attrs = record.split("\t")
+      attrs = record.force_encoding('ISO-8859-1').encode('UTF-8').split("\t")
 
-      country = Location.where("category = 'country' AND props -> 'iso_a2' = #{attrs[8]}").first
+      # for now, only load supported countries
+      next unless (['US'].include?(attrs[8]))
 
-      # TODO: this only works for countries where the ISO code is used for admin1.  
-      state = Location.where("category = 'state' AND props -> 'postal' = #{attrs[9]}")
+      puts "Importing city #{attrs[1]}, #{attrs[10]}, #{attrs[8]}"
+
+      country = Location.where("category = 'country' AND props -> 'iso_a2' = '#{attrs[8]}'").first
+
+      # if the country wasn't loaded, skip the cities
+      next if country.nil?
+
+      # per docs, some countries use ISO codes, some countries use FIPS codes
+      if (['US', 'CH', 'BE', 'ME'].include?(attrs[8]))
+        state = Location.where("category = 'state' AND parent_id = #{country.id} AND props -> 'postal' = '#{attrs[10]}'")
+      else
+        state = Location.where("category = 'state' AND parent_id = #{country.id} AND props -> 'fips' = '#{attrs[10]}'")
+      end
 
       loc = Location.create!(
         :name => attrs[1],
         :category => cat,
         :props => {'pop' => attrs[14]},
-        :parent_id => state.empty? ? country.id : state.first.id
+        :always_show => (['PPLA', 'PPLC'].include?(attrs[7])),
+        :parent_id => state.first.nil? ? country.id : state.first.id
       )
 
-      loc.connection.update_sql("UPDATE locations SET raw_area = ST_Multi(ST_Transform(ST_Expand(ST_Transform(ST_GeomFromText('SRID=4326;POINT(#{attrs[5]} #{attrs[4]})'), 900913), 1000), #{DB_SRID})) WHERE id = #{loc.id}")
+      loc.connection.update_sql("UPDATE locations SET raw_area = ST_Multi(ST_Transform(ST_Expand(ST_Transform(ST_GeomFromEWKT('SRID=4326;POINT(#{attrs[5]} #{attrs[4]})'), 900913), 1000), #{DB_SRID})) WHERE id = #{loc.id}")
       loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
     end
   end
