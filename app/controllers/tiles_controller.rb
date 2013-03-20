@@ -50,7 +50,7 @@ class TilesController < ApplicationController
         end
 
         # states/provinces in supported countries
-        l.query buffered_locations.select("name, raw_area").where(:parent_id => supported_countries.to_a.map(&:id)).to_sql do |q|
+        l.query buffered_locations.select("name, raw_area").where(:parent_id => supported_countries.to_a.map(&:id), :category => 'state').to_sql do |q|
           # thin white border, gray fill
           style = line_style.merge('stroke' => '#F0F0F0')
 
@@ -73,7 +73,8 @@ class TilesController < ApplicationController
 
         end
 
-        # cities only get labled if their population is high enough for the zoom
+        # cities only get labeled if their population is high enough for the zoom or the 
+        # "always_show" flag is set
         city_labels = {
           '6' => 1000000,
           '7' => 500000,
@@ -83,7 +84,7 @@ class TilesController < ApplicationController
           '11' => 25000
         }
         if (city_labels.has_key?(params[:z]))
-          l.query buffered_locations.select("name", "raw_area").where(:category => 'city').where("(props -> 'pop')::int >= #{city_labels[params[:z]]}").to_sql do |q|
+          l.query buffered_locations.select("name", "raw_area").where(:category => 'city').where("((props -> 'pop')::int >= #{city_labels[params[:z]]}) OR always_show IS TRUE").order("(props -> 'pop')::int DESC").to_sql do |q|
             q.styles label_style
           end
         end
