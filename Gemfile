@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 # framework
 gem 'rails', '4.0.0.beta1'
+gem 'actionpack-page_caching'
 
 # database
 gem 'pg'
@@ -19,7 +20,6 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 end
 
-gem 'ember-rails'
 gem 'haml'
 gem 'haml-rails'
 gem 'jbuilder'

@@ -13,13 +13,7 @@
 //= require jquery
 //= require jquery_ujs
 //= require twitter/bootstrap
-//= require handlebars
-//= require ember
-//= require ember-data
 //= require leaflet
 //= require_self
 //= require spinmap
-Spinmap = Ember.Application.create({
-  rootElement: $('#app')
-});
 //= require_tree .

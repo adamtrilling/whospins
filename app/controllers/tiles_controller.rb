@@ -38,7 +38,7 @@ class TilesController < ApplicationController
         'text-stroke-color' => '#000000',
         'text-outline-color' => '#ffffffcc',
         'text-outline-weight' => '2',
-        'font' => 'Avenir Light, Light Oblique 8',
+        'font' => 'Avenir Light, Light Oblique 9',
         'letter-spacing' => '1'
       }
 

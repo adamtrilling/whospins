@@ -1,4 +1,5 @@
 class LocationsController < ApplicationController
+  caches_page :index
 
   def index
     supported_countres = Location.where("name IN ('United States', 'Canada')")
