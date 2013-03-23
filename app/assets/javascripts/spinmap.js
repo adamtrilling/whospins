@@ -16,6 +16,7 @@ function style(feature) {
   };
 }
 
+/* set up the map */
 var map = L.map('map', {
   minZoom: 3,
   maxZoom: 11,
@@ -32,4 +33,10 @@ $.ajax({
   success: function(response) {
     geojsonLayer = L.geoJson(response, {style: style}).addTo(map);
   },
+});
+
+/* attach event handlers to the location selectors */
+$('select#country').change(function() {
+  console.log("changed country to " + $('select#country').val());
+  
 });

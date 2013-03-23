@@ -2,8 +2,10 @@ class LocationsController < ApplicationController
   caches_page :index
 
   def index
-    supported_countres = Location.where("name IN ('United States', 'Canada')")
+    @locations = Location.where(:category => 'state').where(:parent_id => Location.supported_country_ids.map(&:id))
+  end
 
-    @locations = Location.where(:category => 'state').where(:parent_id => supported_countres.map(&:id))
+  def children
+    @locations = Location.where(:parent_id => params[:id]).group_by(&:category)
   end
 end

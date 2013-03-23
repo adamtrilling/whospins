@@ -10,6 +10,14 @@ class Location < ActiveRecord::Base
     end
   end
 
+  scope :supported_country_ids, -> { 
+    select('id').where(:category => 'country', :name => ['United States', 'Canada'])
+  }
+
+  scope :supported_countries, -> {
+    where(:category => 'country', :id => supported_country_ids)
+  }
+
   # when we update a user count, we need to do the same for parents
   ['increment', 'decrement'].each do |direction|
     define_method "#{direction}_users!" do
