@@ -21,6 +21,8 @@ class Location < ActiveRecord::Base
     end
   end
 
+  # converts the area to an array of points.  this makes it far simpler
+  # for jbuilder to build geojson of multipolygons.
   def to_a
     return [] if area.nil?
 
