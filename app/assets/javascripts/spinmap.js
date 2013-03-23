@@ -30,7 +30,6 @@ $.ajax({
   url: "/locations.json",
   dataType: 'json',
   success: function(response) {
-    console.log("adding geojson layer");
     geojsonLayer = L.geoJson(response, {style: style}).addTo(map);
   },
 });
