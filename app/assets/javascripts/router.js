@@ -1,3 +1,0 @@
-Spinmap.Router.map(function() {
-
-});
