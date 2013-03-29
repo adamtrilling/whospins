@@ -8,7 +8,7 @@ class LocationsController < ApplicationController
   def children
     @locations = Location.where(:parent_id => params[:id]).select(:id, :name, :category).group_by(&:category)
 
-    # this isn't complicated enough to make jbuilder useful
+    # no reason to use jbuilder when to_json works fine
     respond_to do |format|
       format.json do        
         render :json @locations.to_json
