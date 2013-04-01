@@ -1,5 +1,5 @@
 Spinmap::Application.routes.draw do
- get "pages/index"
+  get "pages/index"
   root :to => 'pages#index'
 
   resources :users, :only => [:index, :show, :edit, :update ]
@@ -10,5 +10,7 @@ Spinmap::Application.routes.draw do
 
   get '/tiles/:z/:x/:y.png' => 'tiles#show'
 
-  resources :locations, :only => [:index]
+  # resources :locations, :only => [:index]
+  get '/locations' => 'locations#index'
+  get '/locations/children/:id.:format' => 'locations#children'
 end

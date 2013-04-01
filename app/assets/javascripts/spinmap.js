@@ -38,5 +38,19 @@ $.ajax({
 /* attach event handlers to the location selectors */
 $('select#country').change(function() {
   console.log("changed country to " + $('select#country').val());
-  
+  request = $.ajax({
+    url: "/locations/children/" + $('select#country').val() + ".json",
+    dataType: "json"
+  });
+
+  request.done(function(opts) {
+    // clear out the states
+    $('select#state').empty();
+
+    // then add the new ones
+    $.each(opts["state"], function(index, value) {
+      console.log(value);
+      $('<option>').val(value["id"]).text(value["name"]).appendTo('select#state');
+    });
+  });
 });
