@@ -19,51 +19,31 @@ function style(feature) {
 function updateLocationSelect(category) {
   // this logic needs to change if the location hierarchy improves
   if (category == 'country') {
-    request = $.ajax({
-      url: "/locations/children/" + $('select#country').val() + ".json",
-      dataType: "json"
+    clear_categories = ['state', 'county', 'city'];
+  } else if (category == 'state') {
+    clear_categories = ['county', 'city'];
+  }
+
+  // get the children of the proper category
+  request = $.ajax({
+    url: "/locations/children/" + $('select#' + category).val() + ".json",
+    dataType: "json"
+  });
+
+  request.done(function(opts) {
+    // clear out the relevant options
+    $.each(clear_categories, function(i, cat) {
+      $('select#' + cat).empty();
     });
 
-    request.done(function(opts) {
-      // clear out everything
-      $('select#state').empty();
-      $('select#county').empty();
-      $('select#city').empty();
-
-      // then add the new ones
-      $('<option>').val('').appendTo('select#state');
-      $.each(opts["state"], function(index, value) {
-        $('<option>').val(value["id"]).text(value["name"]).appendTo('select#state');
+    // then add the new ones
+    for (var cat in opts) {
+      $('<option>').val('').appendTo('select#' + cat);
+      $.each(opts[cat], function(index, value) {
+        $('<option>').val(value["id"]).text(value["name"]).appendTo('select#' + cat);
       });
-    });
-  }
-  else if (category == 'state') {
-    request = $.ajax({
-      url: "/locations/children/" + $('select#state').val() + ".json",
-      dataType: "json"
-    });
-
-    request.done(function(opts) {
-      // clear out the cities and counties
-      $('select#county').empty();
-      $('select#city').empty();
-
-      // then add the new ones
-      if (opts["county"]) {
-        $('<option>').val('').appendTo('select#county');
-        $.each(opts["county"], function(index, value) {
-          $('<option>').val(value["id"]).text(value["name"]).appendTo('select#county');
-        });
-      }
-
-      if (opts["city"]) {
-        $('<option>').val('').appendTo('select#city');
-        $.each(opts["city"], function(index, value) {
-          $('<option>').val(value["id"]).text(value["name"]).appendTo('select#city');
-        });
-      }
-    });
-  }
+    }
+  });
 }
 
 /* set up the map */
