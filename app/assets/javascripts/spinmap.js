@@ -16,6 +16,56 @@ function style(feature) {
   };
 }
 
+function updateLocationSelect(category) {
+  // this logic needs to change if the location hierarchy improves
+  if (category == 'country') {
+    request = $.ajax({
+      url: "/locations/children/" + $('select#country').val() + ".json",
+      dataType: "json"
+    });
+
+    request.done(function(opts) {
+      // clear out everything
+      $('select#state').empty();
+      $('select#county').empty();
+      $('select#city').empty();
+
+      // then add the new ones
+      $('<option>').val('').appendTo('select#state');
+      $.each(opts["state"], function(index, value) {
+        $('<option>').val(value["id"]).text(value["name"]).appendTo('select#state');
+      });
+    });
+  }
+  else if (category == 'state') {
+    request = $.ajax({
+      url: "/locations/children/" + $('select#state').val() + ".json",
+      dataType: "json"
+    });
+
+    request.done(function(opts) {
+      // clear out the cities and counties
+      $('select#county').empty();
+      $('select#city').empty();
+
+      // then add the new ones
+      if (opts["county"]) {
+        $('<option>').val('').appendTo('select#county');
+        $.each(opts["county"], function(index, value) {
+          $('<option>').val(value["id"]).text(value["name"]).appendTo('select#county');
+        });
+      }
+
+      if (opts["city"]) {
+        $('<option>').val('').appendTo('select#city');
+        $.each(opts["city"], function(index, value) {
+          $('<option>').val(value["id"]).text(value["name"]).appendTo('select#city');
+        });
+      }
+    });
+  }
+}
+
 /* set up the map */
 var map = L.map('map', {
   minZoom: 3,
@@ -35,22 +85,9 @@ $.ajax({
   },
 });
 
+updateLocationSelect('country');
+
 /* attach event handlers to the location selectors */
-$('select#country').change(function() {
-  console.log("changed country to " + $('select#country').val());
-  request = $.ajax({
-    url: "/locations/children/" + $('select#country').val() + ".json",
-    dataType: "json"
-  });
-
-  request.done(function(opts) {
-    // clear out the states
-    $('select#state').empty();
-
-    // then add the new ones
-    $.each(opts["state"], function(index, value) {
-      console.log(value);
-      $('<option>').val(value["id"]).text(value["name"]).appendTo('select#state');
-    });
-  });
+$('#location-form select').change(function() {
+  updateLocationSelect(this.id);
 });
