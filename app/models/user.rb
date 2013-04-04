@@ -1,4 +1,5 @@
 class User < ActiveRecord::Base
+  belongs_to :location
 
   def self.create_with_omniauth(auth)
     create! do |user|

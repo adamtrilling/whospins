@@ -40,13 +40,29 @@ function updateLocationSelect(category) {
     for (var cat in opts) {
       $('<option>').val('').appendTo('select#' + cat);
       $.each(opts[cat], function(index, value) {
-        $('<option>').val(value["id"]).text(value["name"]).appendTo('select#' + cat);
+        opt = $('<option>').val(value["id"]).text(value["name"])
+
+        if (value["id"] == user_location) {
+          opt.attr('selected', 'selected');
+        }
+
+        opt.appendTo('select#' + cat);
       });
     }
   });
 }
 
-/* set up the map */
+// get user info
+var user_location;
+$.ajax({
+  url: "/users/current.json",
+  dataType: 'json',
+  success: function(response) {
+    user_location = response.location;
+  },
+});
+
+// set up the map
 var map = L.map('map', {
   minZoom: 3,
   maxZoom: 11,
@@ -67,7 +83,7 @@ $.ajax({
 
 updateLocationSelect('country');
 
-/* attach event handlers to the location selectors */
+// attach event handlers to the location selectors
 $('#location-form select').change(function() {
   updateLocationSelect(this.id);
 });
