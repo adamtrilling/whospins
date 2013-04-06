@@ -12,7 +12,6 @@ function updateLocationSelect(category) {
   request.done(function(opts) {
     // clear out the relevant options
     $.each(clear_categories, function(i, cat) {
-      console.log("clearing " + cat);
       $('select#' + cat).empty();
     });
 
@@ -36,8 +35,6 @@ $.ajax({
     // which was populated by rails
     $.each(LOCATION_CATEGORIES, function(i, cat) {
       if (response.location[cat]) {
-        console.log("" + cat + " = " + response.location[cat]);
-
         // get the children for the next category, if there is one
         next_cat = LOCATION_CATEGORIES[i + 1]
         if (next_cat !== undefined) {
@@ -49,7 +46,6 @@ $.ajax({
           request.done(function(opts) {
             // rewrite any selects for which we get data
             for (var select in opts) {
-              console.log("clearing " + select);
               $('select#' + select).empty();
 
               $('<option>').val('').appendTo('select#' + select);
