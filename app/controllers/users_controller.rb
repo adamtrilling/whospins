@@ -1,9 +1,17 @@
 class UsersController < ApplicationController
   def current
     if (current_user)
+      # recursively find the user's locations
+      locations = {}
+      loc = current_user.location
+      while (!loc.nil?)
+        locations[loc.category] = loc.id
+        loc = loc.parent
+      end
+
       @user_data = {
         :id => current_user.id,
-        :location => current_user.location.try(:id)
+        :location => locations
       }
     else
       @user_data = {}

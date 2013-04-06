@@ -2,7 +2,11 @@ class LocationsController < ApplicationController
   caches_page :index
 
   def index
-    @locations = Location.where(:category => 'state').where(:parent_id => Location.supported_country_ids.map(&:id))
+    @locations = Location.where(
+      :category => 'state'
+    ).where(
+      :parent_id => Location.supported_country_ids.map(&:id)
+    ).where(:num_users > 0)
   end
 
   def children

@@ -10,6 +10,16 @@ class Location < ActiveRecord::Base
     end
   end
 
+  def country
+    # recurse up the tree until we get a country
+    current_loc = self
+    while (current_loc.category != 'country')
+      current_loc = current_loc.parent
+    end
+
+    current_loc
+  end
+
   scope :supported_country_ids, -> { 
     select('id').where(:category => 'country', :name => ['United States', 'Canada'])
   }
