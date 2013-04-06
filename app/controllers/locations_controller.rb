@@ -6,7 +6,7 @@ class LocationsController < ApplicationController
       :category => 'state'
     ).where(
       :parent_id => Location.supported_country_ids.map(&:id)
-    ).where(:num_users > 0)
+    ).where("num_users > 0")
   end
 
   def children
