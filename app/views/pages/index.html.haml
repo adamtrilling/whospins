@@ -3,8 +3,23 @@
 
   - if current_user
     #location
-      =form_tag '#', :class => 'form-inline', :id => 'location-form' do
-        =select_tag 'country', options_from_collection_for_select(Location.supported_countries.order(:name), :id, :name, :selected => current_user.location ? current_user.location.country.id : nil), :include_blank => true
-        =select_tag 'state', ''
-        =select_tag 'county', ''
-        =select_tag 'city', ''
+      =form_tag '#', :class => 'form-horizontal', :id => 'location-form' do
+        .control-group
+          =label_tag :country, "Country", :class => 'control-label'
+          .controls
+            =select_tag 'country', options_from_collection_for_select(Location.supported_countries.order(:name), :id, :name, :selected => current_user.location ? current_user.location.country.id : nil), :include_blank => true
+        .control-group
+          =label_tag :state, "State/Province", :class => 'control-label'
+          .controls
+            =select_tag 'state', ''
+        .control-group
+          =label_tag :county, "County", :class => 'control-label'
+          .controls
+            =select_tag 'county', ''
+        .control-group
+          =label_tag :city, "City", :class => 'control-label'
+          .controls
+            =select_tag 'city', ''
+        .control-group
+          .controls
+            =submit_tag "Save", :class => 'btn', :id => 'location-save'
