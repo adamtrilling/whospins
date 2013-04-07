@@ -6,8 +6,6 @@ function updateLocationSelect(category) {
   // clear out the relevant options and add a placeholder
   $.each(clear_categories, function(i, cat) {
     $('select#' + cat).empty();
-    opt = $('<option>').text("--Loading--")
-    opt.appendTo('select#' + cat);
   });
 
   // get the children of the proper category
@@ -19,9 +17,6 @@ function updateLocationSelect(category) {
   request.done(function(opts) {
     // add the new options
     for (var cat in opts) {
-      // nuke the placeholder
-      $('select#' + cat).empty();
-
       $('<option>').val('').appendTo('select#' + cat);
       $.each(opts[cat], function(index, value) {
         opt = $('<option>').val(value["id"]).text(value["name"])
