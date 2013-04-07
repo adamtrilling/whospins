@@ -3,6 +3,13 @@ LOCATION_CATEGORIES = ['country', 'state', 'county', 'city'];
 function updateLocationSelect(category) {
   clear_categories = LOCATION_CATEGORIES.slice(LOCATION_CATEGORIES.indexOf(category) + 1);
 
+  // clear out the relevant options and add a placeholder
+  $.each(clear_categories, function(i, cat) {
+    $('select#' + cat).empty();
+    opt = $('<option>').text("--Loading--")
+    opt.appendTo('select#' + cat);
+  });
+
   // get the children of the proper category
   request = $.ajax({
     url: "/locations/children/" + $('select#' + category).val() + ".json",
@@ -10,13 +17,11 @@ function updateLocationSelect(category) {
   });
 
   request.done(function(opts) {
-    // clear out the relevant options
-    $.each(clear_categories, function(i, cat) {
-      $('select#' + cat).empty();
-    });
-
-    // then add the new ones
+    // add the new options
     for (var cat in opts) {
+      // nuke the placeholder
+      $('select#' + cat).empty();
+
       $('<option>').val('').appendTo('select#' + cat);
       $.each(opts[cat], function(index, value) {
         opt = $('<option>').val(value["id"]).text(value["name"])
@@ -68,6 +73,33 @@ $.ajax({
 });
 
 // attach event handlers to the location selectors
-$('#location-form select').change(function() {
-  updateLocationSelect(this.id);
+$('#location-form select').change(function(event) {
+  if (/^\d+$/.test(event.target.value)) {
+    updateLocationSelect(this.id);
+  }
+});
+
+// handle form submission
+$('#location-form').submit(function(event) {
+  event.preventDefault();
+
+  var $form = $(this),
+      country = $form.find('select#country').val(),
+      state = $form.find('select#state').val(),
+      county = $form.find('select#county').val(),
+      city = $form.find('select#city').val(),
+      url = $form.attr('action');
+
+  request = $.ajax(url, { 
+    type: 'PUT',
+    data: {
+      location: {
+        country: country,
+        state: state,
+        county: county,
+        city: city
+      }
+    }
+  });
+  return false;
 });
