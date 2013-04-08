@@ -42,6 +42,7 @@ ActiveRecord::Schema.define(version: 20130302024307) do
     t.string   "provider"
     t.string   "uid"
     t.string   "name"
+    t.hstore   "location_names"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "location_id"

@@ -33,7 +33,9 @@ class Location < ActiveRecord::Base
     define_method "#{direction}_users!" do
       current_loc = self
       while (!current_loc.nil?)
-        current_loc.send("#{direction}!".to_sym, :num_users)
+        # use raw SQL to do the update because saving locations is REALLY
+        # expensive due to the geometry fields
+        current_loc.connection.execute("UPDATE locations SET num_users = num_users #{direction == 'increment' ? '+' : '-'} 1 WHERE id = #{current_loc.id}")
         current_loc = current_loc.parent
       end
     end
