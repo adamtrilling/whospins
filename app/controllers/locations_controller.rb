@@ -1,12 +1,16 @@
 class LocationsController < ApplicationController
   caches_page :index
 
-  def index
+  def overlay
     @locations = Location.where(
-      :category => 'state'
-    ).where(
-      :parent_id => Location.supported_country_ids.map(&:id)
+      :category => params[:id]
     ).where("num_users > 0")
+
+    respond_to do |format|
+      format.json do 
+        render 'overlay'
+      end
+    end
   end
 
   def children

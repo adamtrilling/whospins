@@ -12,7 +12,6 @@ Spinmap::Application.routes.draw do
 
   get '/tiles/:z/:x/:y.png' => 'tiles#show'
 
-  # resources :locations, :only => [:index]
-  get '/locations' => 'locations#index'
   get '/locations/children/:id.:format' => 'locations#children'
+  get '/locations/overlay/:id.:format' => 'locations#overlay'
 end
