@@ -2,7 +2,9 @@ class LocationsController < ApplicationController
   caches_page :index
 
   def overlay
-    @locations = Location.where(
+    @locations = Location.select(
+      'locations.*, percent_rank() OVER (ORDER BY num_users)'
+    ).where(
       :category => params[:id]
     ).where("num_users > 0")
 

@@ -1,13 +1,12 @@
 function getColor(n) {
-  return n > 50   ? '#EDF8FB' :
-         n > 20   ? '#B3CDE3' :
-         n > 10   ? '#8C96C6' :
-                  '#EDF8FB';
+  return n > 0.9   ? '#756BB1' :
+         n > 0.5   ? '#BCBDDC' :
+                     '#EFEDF5';
 }
 
 function style(feature) {
   return {
-    fillColor: getColor(feature.properties.num_users),
+    fillColor: getColor(feature.properties.percent_rank),
     weight: 2,
     opacity: 1,
     color: 'white',
