@@ -34,6 +34,8 @@ $.ajax({
     // populate the selects with the user's info, except country,
     // which was populated by rails
     $.each(LOCATION_CATEGORIES, function(i, cat) {
+      $('<option>').val('').appendTo('select#' + cat);
+
       if (response.location[cat]) {
         // get the children for the next category, if there is one
         next_cat = LOCATION_CATEGORIES[i + 1]
@@ -46,9 +48,6 @@ $.ajax({
           request.done(function(opts) {
             // rewrite any selects for which we get data
             for (var select in opts) {
-              $('select#' + select).empty();
-
-              $('<option>').val('').appendTo('select#' + select);
               $.each(opts[select], function(index, value) {
                 opt = $('<option>').val(value["id"]).text(value["name"])
 
