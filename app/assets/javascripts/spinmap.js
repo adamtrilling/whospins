@@ -1,7 +1,8 @@
 function getColor(n) {
-  return n > 0.9   ? '#756BB1' :
-         n > 0.5   ? '#BCBDDC' :
-                     '#EFEDF5';
+  return n > 0.9   ? '#88419D' :
+         n > 0.5   ? '#8C96C6' :
+         n > 0.25  ? '#B3CDE3' :
+                     '#EDF8FB';
 }
 
 function style(feature) {
@@ -48,8 +49,9 @@ var map = L.map('map', {
 var layer = L.tileLayer('/tiles/{z}/{x}/{y}.png');
 map.addLayer(layer).setView(new L.LatLng(38, -95), 3);
 
+// handle geoJSON layers
+
+
 var geojsonLayer = null;
-map.on({
-  'load': loadOverlay,
-  'zoomend': loadOverlay
-});
+loadOverlay(null);
+map.on('zoomend', loadOverlay);
