@@ -17,27 +17,22 @@ function style(feature) {
 }
 
 function loadOverlay() {
-  // remove the existing layer, if any
-  if (geojsonLayer !== null) {
-    map.removeLayer(geojsonLayer);
-  }
-
-  if (map.getZoom() >= 5) {
-    url = "/locations/overlay/county.json";
+  if (map.getZoom() >= 6) {
+    if (map.hasLayer(geojsonLayers['state'])) {
+      map.removeLayer(geojsonLayers['state']);
+    }
+    if (!map.hasLayer(geojsonLayers['county'])) {
+      map.addLayer(geojsonLayers['county']);
+    }
   }
   else {
-    url = "/locations/overlay/state.json";
+    if (map.hasLayer(geojsonLayers['county'])) {
+      map.removeLayer(geojsonLayers['county']);
+    }
+    if (!map.hasLayer(geojsonLayers['state'])) {
+      map.addLayer(geojsonLayers['state']);
+    }
   }
-
-  // grab the geojson layer
-  $.ajax({
-    type: "GET",
-    url: url,
-    dataType: 'json',
-    success: function(response) {
-      geojsonLayer = L.geoJson(response, {style: style}).addTo(map);
-    },
-  });
 }
 
 // set up the map
@@ -49,9 +44,26 @@ var map = L.map('map', {
 var layer = L.tileLayer('/tiles/{z}/{x}/{y}.png');
 map.addLayer(layer).setView(new L.LatLng(38, -95), 3);
 
-// handle geoJSON layers
+// load the geoJSON layers
+var geojsonLayers = {
+  state: null,
+  county: null
+};
 
+$.each(geojsonLayers, function(key) {
+  // grab the geojson layer
+  $.ajax({
+    type: "GET",
+    url: "/locations/overlay/" + key + ".json",
+    dataType: 'json',
+    async: false,
+    success: function(response) {
+      geojsonLayers[key] = L.geoJson(response, {style: style});
+    },
+  });  
+});
 
-var geojsonLayer = null;
-loadOverlay(null);
+console.log(geojsonLayers);
+
+loadOverlay();
 map.on('zoomend', loadOverlay);
