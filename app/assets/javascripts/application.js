@@ -15,5 +15,6 @@
 //= require twitter/bootstrap
 //= require leaflet
 //= require_self
-//= require spinmap
+//= require map
+//= require location_select
 //= require_tree .
