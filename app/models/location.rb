@@ -20,6 +20,16 @@ class Location < ActiveRecord::Base
     current_loc
   end
 
+  def display_name
+    if (category == 'country')
+      name
+    elsif (category == 'state' || category == 'city')
+      "#{name}, #{parent.name}"
+    elsif (category == 'county')
+      "#{name} County, #{parent.name}"
+    end
+  end
+
   scope :supported_country_ids, -> { 
     select('id').where(:category => 'country', :name => ['United States', 'Canada'])
   }

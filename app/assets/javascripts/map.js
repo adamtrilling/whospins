@@ -16,6 +16,40 @@ function style(feature) {
   };
 }
 
+function highlightFeature(e) {
+  var layer = e.target;
+
+  layer.setStyle({
+    weight: 5,
+    color: '#666',
+    dashArray: '',
+    fillOpacity: 0.7
+  });
+
+  if (!L.Browser.ie && !L.Browser.opera) {
+    layer.bringToFront();
+  }
+
+  info.update(layer.feature.properties);
+}
+
+function resetHighlight(e) {
+  geojsonLayer.resetStyle(e.target);
+  info.update();
+}
+
+function zoomToFeature(e) {
+  map.fitBounds(e.target.getBounds());
+}
+
+function onEachFeature(feature, layer) {
+  layer.on({
+    mouseover: highlightFeature,
+    mouseout: resetHighlight,
+    click: zoomToFeature
+  });
+}
+
 function loadOverlay() {
   if (map.getZoom() >= 6) {
     if (map.hasLayer(geojsonLayers['state'])) {
@@ -23,6 +57,7 @@ function loadOverlay() {
     }
     if (!map.hasLayer(geojsonLayers['county'])) {
       map.addLayer(geojsonLayers['county']);
+      geojsonLayer = geojsonLayers['county'];
     }
   }
   else {
@@ -31,6 +66,7 @@ function loadOverlay() {
     }
     if (!map.hasLayer(geojsonLayers['state'])) {
       map.addLayer(geojsonLayers['state']);
+      geojsonLayer = geojsonLayers['state'];
     }
   }
 }
@@ -41,14 +77,15 @@ var map = L.map('map', {
   maxZoom: 11,
   maxBounds: [[-90, -180], [90, 180]]
 });
-var layer = L.tileLayer('/tiles/{z}/{x}/{y}.png');
-map.addLayer(layer).setView(new L.LatLng(38, -95), 3);
+var tileLayer = L.tileLayer('/tiles/{z}/{x}/{y}.png');
+map.addLayer(tileLayer).setView(new L.LatLng(38, -95), 3);
 
 // load the geoJSON layers
 var geojsonLayers = {
   state: null,
   county: null
 };
+var geojsonLayer = null;
 
 $.each(geojsonLayers, function(key) {
   // grab the geojson layer
@@ -58,12 +95,42 @@ $.each(geojsonLayers, function(key) {
     dataType: 'json',
     async: false,
     success: function(response) {
-      geojsonLayers[key] = L.geoJson(response, {style: style});
+      geojsonLayers[key] = L.geoJson(response, {
+        style: style,
+        onEachFeature: onEachFeature
+      });
     },
   });  
 });
 
-console.log(geojsonLayers);
-
 loadOverlay();
 map.on('zoomend', loadOverlay);
+
+// info box
+var info = L.control();
+
+info.onAdd = function (map) {
+  this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+  this.update();
+  return this._div;
+};
+
+// method that we will use to update the control based on feature properties passed
+info.update = function (props) {
+  var html = "";
+
+  if (props) {
+    html = '<b>' + props.display_name;
+
+    if (props.num_users > 0) {
+      html = html + '</b><br />' + props.num_users + ' spinners';
+    }
+  }
+  else {
+    html = 'Hover over a state or county';
+  }
+
+  this._div.innerHTML = (html);
+};
+
+info.addTo(map);
