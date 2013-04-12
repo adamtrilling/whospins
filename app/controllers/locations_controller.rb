@@ -2,6 +2,9 @@ class LocationsController < ApplicationController
   caches_page :index, :overlay
 
   def overlay
+    # user counts needs to be a subquery table so that we can use the counts
+    # in the window function and the where clause.  this won't work in any 
+    # database other than postgresql.
     @locations = Location.select(
       'locations.*, lu.num_users, percent_rank() OVER (ORDER BY lu.num_users)'
     ).joins(
@@ -15,6 +18,8 @@ class LocationsController < ApplicationController
     ).where(
       "num_users > 0"
     )
+
+    Rails.logger.info("query = #{@locations.to_sql}")
 
     respond_to do |format|
       format.json do 
