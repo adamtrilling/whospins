@@ -5,7 +5,6 @@ class CreateLocations < ActiveRecord::Migration
       t.string :name
       t.string :category
       t.hstore :props # for finding parent/child relationships
-      t.integer :num_users, :default => 0
       t.boolean :always_show, :default => false
       t.multi_polygon :raw_area, :srid => 4326
       t.multi_polygon :area, :srid => 4326
@@ -14,13 +13,18 @@ class CreateLocations < ActiveRecord::Migration
     add_index :locations, :name
     add_index :locations, :parent_id
     add_index :locations, :category
-    execute "CREATE INDEX locations_uids_index ON locations USING gin(props)"
-    add_index :locations, :num_users
+    execute "CREATE INDEX locations_props_index ON locations USING gin(props)"
     add_index :locations, :always_show
     add_index :locations, :raw_area, :spatial => true
     add_index :locations, :area, :spatial => true
 
-    add_column :users, :location_id, :integer
-    add_index :users, :location_id
+    # habtm table locations <=> users
+    create_table :locations_users, :id => false do |t|
+      t.references :location
+      t.references :user
+    end
+
+    add_index :locations_users, :location_id
+    add_index :locations_users, :user_id
   end
 end

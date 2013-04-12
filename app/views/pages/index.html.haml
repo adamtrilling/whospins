@@ -7,7 +7,7 @@
         .control-group
           =label_tag :country, "Country", :class => 'control-label'
           .controls
-            =select_tag 'country', options_from_collection_for_select(Location.supported_countries.order(:name), :id, :name, :selected => current_user.location ? current_user.location.country.id : nil), :include_blank => true
+            =select_tag 'country', options_from_collection_for_select(Location.supported_countries.order(:name), :id, :name, :selected => current_user_country_id ? current_user_country_id : nil), :include_blank => true
         .control-group
           =label_tag :state, "State/Province", :class => 'control-label'
           .controls

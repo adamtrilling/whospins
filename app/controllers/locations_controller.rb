@@ -1,12 +1,20 @@
 class LocationsController < ApplicationController
-  caches_page :index
+  caches_page :index, :overlay
 
   def overlay
     @locations = Location.select(
-      'locations.*, percent_rank() OVER (ORDER BY num_users)'
+      'locations.*, lu.num_users, percent_rank() OVER (ORDER BY lu.num_users)'
+    ).joins(
+      ", (SELECT location_id, COUNT(user_id) as num_users 
+          FROM locations_users
+      GROUP BY location_id) AS lu"
+    ).where(
+      "locations.id = lu.location_id"
     ).where(
       :category => params[:id]
-    ).where("num_users > 0")
+    ).where(
+      "num_users > 0"
+    )
 
     respond_to do |format|
       format.json do 
