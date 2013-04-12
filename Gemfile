@@ -24,7 +24,6 @@ gem 'haml'
 gem 'haml-rails'
 gem 'jbuilder'
 gem 'jquery-rails'
-gem 'twitter-bootstrap-rails'
 
 # authentication
 gem 'omniauth'

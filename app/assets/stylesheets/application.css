@@ -12,6 +12,10 @@
  *= require_tree .
  */
 
+.navbar {
+  line-height: 40px !important;
+}
+
 #map { 
   height: 400px; 
   width: 800px;
