@@ -9,4 +9,4 @@
 
 # Make sure your secret_key_base is kept private
 # if you're sharing your code publicly.
-Spinmap::Application.config.secret_key_base = '8b3a88facfaa1c6554d52df20b22d3a1bc88f5fd48a8529cb91ca6df5bf0927de15c0d57fb2c52d3d00ab48bc82cefd54bbdb3102d7ddf99ba864591de11618a'
+Whospins::Application.config.secret_key_base = '8b3a88facfaa1c6554d52df20b22d3a1bc88f5fd48a8529cb91ca6df5bf0927de15c0d57fb2c52d3d00ab48bc82cefd54bbdb3102d7ddf99ba864591de11618a'

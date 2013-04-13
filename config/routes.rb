@@ -1,4 +1,4 @@
-Spinmap::Application.routes.draw do
+Whospins::Application.routes.draw do
   get "pages/index"
   root :to => 'pages#index'
 

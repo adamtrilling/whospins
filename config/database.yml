@@ -1,6 +1,6 @@
 development:
   adapter: postgis
-  database: spinmap_development
+  database: whospins_development
   host: localhost
   username: spinmap
   password: 
@@ -10,7 +10,7 @@ development:
 
 test:
   adapter: postgis
-  database: spinmap_test
+  database: whospins_test
   host: localhost
   username: spinmap
   password: 
@@ -21,7 +21,7 @@ test:
 production:
   adapter: postgresql
   encoding: unicode
-  database: spinmap_production
+  database: whospins_production
   pool: 5
   username: spinmap
   password:

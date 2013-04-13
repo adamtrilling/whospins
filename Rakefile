@@ -3,4 +3,4 @@
 
 require File.expand_path('../config/application', __FILE__)
 
-Spinmap::Application.load_tasks
+Whospins::Application.load_tasks
