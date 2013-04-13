@@ -2,6 +2,7 @@ class User < ActiveRecord::Base
   has_and_belongs_to_many :locations
 
   before_save :set_location_names
+  after_save :set_location_numbers
 
   def self.create_with_omniauth(auth)
     create! do |user|
@@ -20,4 +21,16 @@ class User < ActiveRecord::Base
       self.location_names[l.category] = l.name
     end
   end
+
+  def set_location_numbers
+    # cache the location numbers.  it saves a TON of time
+    # in generating overlays.
+    connection.execute("
+UPDATE locations SET num_users = subquery.num 
+  FROM (SELECT location_id, count(user_id) as num
+          FROM locations_users 
+      GROUP BY location_id) AS subquery
+ WHERE locations.id = subquery.location_id")
+  end
+
 end

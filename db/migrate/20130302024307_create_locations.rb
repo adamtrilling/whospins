@@ -6,6 +6,7 @@ class CreateLocations < ActiveRecord::Migration
       t.string :category
       t.hstore :props # for finding parent/child relationships
       t.boolean :always_show, :default => false
+      t.integer :num_users # cache to speed up percent_rank()
       t.multi_polygon :raw_area, :srid => 4326
       t.multi_polygon :area, :srid => 4326
     end
@@ -15,6 +16,7 @@ class CreateLocations < ActiveRecord::Migration
     add_index :locations, :category
     execute "CREATE INDEX locations_props_index ON locations USING gin(props)"
     add_index :locations, :always_show
+    add_index :locations, :num_users
     add_index :locations, :raw_area, :spatial => true
     add_index :locations, :area, :spatial => true
 

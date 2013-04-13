@@ -7,7 +7,7 @@ function getColor(n) {
 
 function style(feature) {
   return {
-    fillColor: getColor(feature.properties.percent_rank),
+    fillColor: getColor(feature.properties.percentile),
     weight: 2,
     opacity: 1,
     color: 'white',

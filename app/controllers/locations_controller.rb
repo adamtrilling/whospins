@@ -6,20 +6,12 @@ class LocationsController < ApplicationController
     # in the window function and the where clause.  this won't work in any 
     # database other than postgresql.
     @locations = Location.select(
-      'locations.*, lu.num_users, percent_rank() OVER (ORDER BY lu.num_users)'
-    ).joins(
-      ", (SELECT location_id, COUNT(user_id) as num_users 
-          FROM locations_users
-      GROUP BY location_id) AS lu"
-    ).where(
-      "locations.id = lu.location_id"
+      "*, percent_rank() OVER (ORDER BY num_users)"
     ).where(
       :category => params[:id]
     ).where(
       "num_users > 0"
-    )
-
-    Rails.logger.info("query = #{@locations.to_sql}")
+    ).includes(:users)
 
     respond_to do |format|
       format.json do 
