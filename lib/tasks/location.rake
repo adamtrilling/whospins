@@ -1,8 +1,12 @@
+require 'fileutils'
+
 namespace :location do
   desc "Load data from shapefiles from scratch"
   task :load => :environment do
 
     DATA_DIR = Rails.root.join('lib', 'data', 'location')
+    FileUtils.mkdir_p DATA_DIR
+
     DB_SRID = Location.connection.select_all("SELECT Find_SRID('public', 'locations', 'raw_area') AS srid").first["srid"]
 
     puts "Removing existing data"
