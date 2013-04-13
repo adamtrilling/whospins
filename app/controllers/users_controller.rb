@@ -4,39 +4,9 @@ class UsersController < ApplicationController
 
     # handle the location, if given
     if (params[:location])
-      categories = ['country', 'state', 'county', 'city']
-      location = nil
-      categories.each_with_index do |cat, i|
-        # check that the location, if given, exists, is the right category,
-        # and has the correct parent
-        if (params[:location][cat])
-          # don't throw an exception if not found, since we're going to test
-          # for nil later anyway
-          possible_location = Location.find_by_id(params[:location][cat])
-
-          if (possible_location && possible_location.category == cat)
-            # don't check parentage for country
-            if (i > 0)
-              if (possible_location.parent_id == location.id)
-                location = possible_location
-                status = "OK"
-              else
-                status = "invalid parent"
-                break
-              end
-            else
-              location = possible_location
-              status = "OK"
-            end
-          end
-        end
-      end
-
-      if (location.nil?)
-        status = "no location given"
-      else
-        status = "OK"
-        @user.location = location
+      @user.locations.clear
+      params[:location].each do |cat, loc|
+        @user.locations << Location.find(loc)
       end
     end
 
@@ -55,17 +25,12 @@ class UsersController < ApplicationController
 
   def current
     if (current_user)
-      # recursively find the user's locations
-      locations = {}
-      loc = current_user.location
-      while (!loc.nil?)
-        locations[loc.category] = loc.id
-        loc = loc.parent
-      end
-
       @user_data = {
         :id => current_user.id,
-        :location => locations
+        :location => current_user.locations.inject({}) {|hash, loc| 
+          hash[loc.category] = loc.id
+          hash
+        }
       }
     else
       @user_data = {}
