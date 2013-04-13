@@ -124,6 +124,9 @@ info.update = function (props) {
 
     if (props.num_users > 0) {
       html = html + '</b><br />' + props.num_users + ' spinners';
+      for (var u in props.users) {
+        html = html + '<br />' + props.users[u].name;
+      }
     }
   }
   else {
