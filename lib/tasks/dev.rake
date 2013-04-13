@@ -16,7 +16,7 @@ order by random()")
 
     1000.times do |i|
       print "user #{i}..."
-      u = User.create(:name => "User#{i}")
+      u = User.create(:uid => "User#{i}")
 
       # walk up the tree
       current_loc = locations[i]
