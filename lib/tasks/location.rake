@@ -54,6 +54,11 @@ namespace :location do
           uids = { 'postal' => record['postal'] }
           if (record['iso_a2'] == 'US')
             uids['fips'] = record["code_local"][2..3]
+
+            # this file has the wrong FIPS code for MN
+            if (uids['postal'] == "MN")
+              uids['fips'] = '27'
+            end
           end
 
           [Location.create!(
@@ -65,43 +70,60 @@ namespace :location do
       },
       {
         'category' => 'county',
-        'url' => 'http://www.baruch.cuny.edu/geoportal/data/esri/usa/census/counties.zip',
-        'zipfile' => 'counties.zip',
-        'shapefile' => 'counties.shp',
-        'srid' => '4326',
-        'processor' => Proc.new { |category, record| 
-          next if record.geometry.nil?
-
-          parent = Location.where("category = 'state' AND props -> 'fips' = '#{record["STATE_FIPS"]}'").first
+        'url' => 'http://www2.census.gov/geo/tiger/TIGER2012/COUNTY/tl_2012_us_county.zip',
+        'zipfile' => 'tl_2012_us_county.zip',
+        'shapefile' => 'tl_2012_us_county.shp',
+        'srid' => '4269',
+        'tolerance' => '2000',
+        'processor' => Proc.new {|category, record|
+          parent = Location.where("category = 'state' AND props -> 'fips' = '#{record["STATEFP"]}'").first
 
           [Location.create!(
-            :name => record["NAME"],
+            :name => record["NAME"].force_encoding('ISO-8859-1').encode('UTF-8'),
             :category => category,
-            :props => {'fips' => record['CNTY_FIPS']},
+            :props => {'fips' => record["COUNTYFP"]},
             :parent_id => parent.nil? ? nil : parent.id)]
         }
       },
-      {
-        'category' => 'county',
-        'url' => 'http://www.baruch.cuny.edu/geoportal/data/esri/usa/census/dtl_cnty.zip',
-        'zipfile' => 'dtl_cnty.zip',
-        'shapefile' => 'dtl_cnty.shp',
-        'srid' => '4326',
-        'processor' => Proc.new { |category, record|
-          next if record.geometry.nil?
+      # {
+      #   'category' => 'county',
+      #   'url' => 'http://www.baruch.cuny.edu/geoportal/data/esri/usa/census/counties.zip',
+      #   'zipfile' => 'counties.zip',
+      #   'shapefile' => 'counties.shp',
+      #   'srid' => '4326',
+      #   'processor' => Proc.new { |category, record| 
+      #     next if record.geometry.nil?
 
-          # skip existing counties
-          next if (Location.where("category = 'county' AND props -> 'fips' = #{record["CNTY_FIPS"]}"))
+      #     parent = Location.where("category = 'state' AND props -> 'fips' = '#{record["STATE_FIPS"]}'").first
 
-          parent = Location.where("category = 'state' AND props -> 'fips' = '#{record["STATE_FIPS"]}'").first
+      #     [Location.create!(
+      #       :name => record["NAME"],
+      #       :category => category,
+      #       :props => {'fips' => record['CNTY_FIPS']},
+      #       :parent_id => parent.nil? ? nil : parent.id)]
+      #   }
+      # },
+      # {
+      #   'category' => 'county',
+      #   'url' => 'http://www.baruch.cuny.edu/geoportal/data/esri/usa/census/dtl_cnty.zip',
+      #   'zipfile' => 'dtl_cnty.zip',
+      #   'shapefile' => 'dtl_cnty.shp',
+      #   'srid' => '4326',
+      #   'processor' => Proc.new { |category, record|
+      #     next if record.geometry.nil?
 
-          [Location.create!(
-            :name => record["NAME"],
-            :category => category,
-            :props => {'fips' => record['CNTY_FIPS']},
-            :parent_id => parent.nil? ? nil : parent.id)]
-        }
-      },
+      #     # skip existing counties
+      #     next if (Location.where("category = 'county' AND props -> 'fips' = #{record["CNTY_FIPS"]}"))
+
+      #     parent = Location.where("category = 'state' AND props -> 'fips' = '#{record["STATE_FIPS"]}'").first
+
+      #     [Location.create!(
+      #       :name => record["NAME"],
+      #       :category => category,
+      #       :props => {'fips' => record['CNTY_FIPS']},
+      #       :parent_id => parent.nil? ? nil : parent.id)]
+      #   }
+      # },
     ]
 
     # # the US Census distributes files that are named
@@ -182,7 +204,7 @@ namespace :location do
                 # transform to Web Mercator before simplifying, because simplifying 
                 # lat/lon geometries causes weird things to happen.  like the state 
                 # of Michigan disappearing.
-                loc.connection.update_sql("UPDATE locations SET area = ST_Transform(ST_Simplify(ST_Transform(raw_area, 900913), #{attrs['tolerance']}), #{attrs['srid']}) WHERE id = #{loc.id}")
+                loc.connection.update_sql("UPDATE locations SET area = ST_Transform(ST_Simplify(ST_Transform(raw_area, 900913), #{attrs['tolerance']}), #{DB_SRID}) WHERE id = #{loc.id}")
               else
                 loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
               end
