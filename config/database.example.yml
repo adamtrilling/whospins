@@ -1,4 +1,4 @@
-development:
+development: &base
   adapter: postgis
   database: whospins_development
   host: localhost
@@ -9,19 +9,9 @@ development:
   postgis_extension: ['postgis', 'hstore']
 
 test:
-  adapter: postgis
   database: whospins_test
-  host: localhost
-  username: spinmap
-  password: 
-  su_username: adam
-  su_password: 
-  postgis_extension: true
+  <<: *base
 
 production:
-  adapter: postgresql
-  encoding: unicode
   database: whospins_production
-  pool: 5
-  username: spinmap
-  password:
+  <<: *base
