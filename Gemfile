@@ -3,11 +3,12 @@ source 'https://rubygems.org'
 # framework
 gem 'rails', '4.0.0.beta1'
 gem 'actionpack-page_caching'
+gem 'puma', :github => 'puma/puma'
 
 # database
 gem 'pg'
-#gem 'activerecord-postgis-adapter', :github => 'dazuma/activerecord-postgis-adapter'
-gem 'activerecord-postgis-adapter', :path => '../activerecord-postgis-adapter'
+gem 'activerecord-postgis-adapter', :github => 'dazuma/activerecord-postgis-adapter'
+# gem 'activerecord-postgis-adapter', :path => '../activerecord-postgis-adapter'
 
 # gis
 gem 'rgeo-shapefile'

@@ -1,14 +1,22 @@
 GIT
+  remote: git://github.com/dazuma/activerecord-postgis-adapter.git
+  revision: c91639782c72cb7e3166e0295f7288fe88b0c2e1
+  specs:
+    activerecord-postgis-adapter (0.6.2.nonrelease)
+      rgeo-activerecord (~> 0.5.0)
+
+GIT
   remote: git://github.com/propublica/simpler-tiles.git
   revision: f299e7fdd7c94e981b8b4a2a35da90732696d1af
   specs:
     simpler-tiles (0.0.7)
 
-PATH
-  remote: ../activerecord-postgis-adapter
+GIT
+  remote: git://github.com/puma/puma.git
+  revision: cc91b6cd511787b3a6d37df7c89d45facadef75f
   specs:
-    activerecord-postgis-adapter (0.6.1.nonrelease)
-      rgeo-activerecord (~> 0.5.0)
+    puma (2.0.0.b7)
+      rack (>= 1.1, < 2.0)
 
 GEM
   remote: https://rubygems.org/
@@ -186,6 +194,7 @@ DEPENDENCIES
   omniauth
   omniauth-ravelry
   pg
+  puma!
   quiet_assets
   rails (= 4.0.0.beta1)
   rgeo-shapefile
