@@ -25,6 +25,7 @@ gem 'haml'
 gem 'haml-rails'
 gem 'jbuilder'
 gem 'jquery-rails'
+gem 'therubyracer'
 
 # authentication
 gem 'omniauth'
