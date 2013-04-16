@@ -194,7 +194,7 @@ namespace :location do
               end
 
               # if the shapefile contains points, make them into polygons
-              if (record.geometry.is_a?(RGeo::Geos::CAPIPointImpl))
+              if (record.geometry.is_a?(RGeo::Geos::FFIPointImpl))
                 loc.connection.update_sql("UPDATE locations SET raw_area = ST_Multi(ST_Transform(ST_Expand(ST_Transform(ST_GeomFromText('#{record.geometry.as_text}', #{attrs['srid']}), 900913), 1000), #{DB_SRID})) WHERE id = #{loc.id}")
               else
                 loc.connection.update_sql("UPDATE locations SET raw_area = ST_Transform(ST_GeomFromText('#{record.geometry.as_text}', #{attrs['srid']}), #{DB_SRID}) WHERE id = #{loc.id}")
