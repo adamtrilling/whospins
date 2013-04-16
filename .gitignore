@@ -18,7 +18,7 @@
 
 # ignore secrets
 /config/keys.yml
-/config/database.yml
+#/config/database.yml
 
 # ignore shapefiles and tiles
 /lib/data

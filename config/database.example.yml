@@ -14,4 +14,6 @@ test:
 
 production:
   database: whospins_production
+  username: whospins
+  su_username: postgres
   <<: *base
