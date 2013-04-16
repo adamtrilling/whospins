@@ -1,1 +1,22 @@
-database.example.yml
+defaults: &base
+  adapter: postgis
+  host: localhost  
+  postgis_extension: ['postgis', 'hstore']
+
+development: &base
+  database: whospins_development
+  username: spinmap
+  password: 
+  su_username: adam
+  su_password: 
+  <<: *base
+
+test:
+  database: whospins_test
+  <<: *base
+
+production:
+  database: whospins_production
+  username: whospins
+  su_username: postgres
+  <<: *base
