@@ -1,15 +1,12 @@
-defaults: &base
-  adapter: postgis
-  host: localhost  
-  postgis_extension: ['postgis', 'hstore']
-
 development: &base
+  adapter: postgis
   database: whospins_development
+  host: localhost
   username: spinmap
   password: 
   su_username: adam
   su_password: 
-  <<: *base
+  postgis_extension: ['postgis', 'hstore']
 
 test:
   database: whospins_test
