@@ -233,13 +233,17 @@ namespace :location do
       system unzip_cmd
     end
 
+    num_records = %x{wc -l #{DATA_DIR}/#{cat}/#{tsvfile}}.split.first.to_i
+    puts "#{cat} file contains #{num_records} records."
+
+    i = 1
     File.open("#{DATA_DIR}/#{cat}/#{tsvfile}").each do |record|
       attrs = record.force_encoding('ISO-8859-1').encode('UTF-8').split("\t")
 
       # for now, only load supported countries
       next unless (['US'].include?(attrs[8]))
 
-      puts "Importing city #{attrs[1]}, #{attrs[10]}, #{attrs[8]}"
+      puts "(#{i} of #{num_records}) #{attrs[1]}, #{attrs[10]}, #{attrs[8]}"
 
       country = Location.where("category = 'country' AND props -> 'iso_a2' = '#{attrs[8]}'").first
 
@@ -277,6 +281,8 @@ namespace :location do
 
       loc.connection.update_sql("UPDATE locations SET raw_area = ST_Multi(ST_Transform(ST_Expand(ST_Transform(ST_GeomFromEWKT('SRID=4326;POINT(#{attrs[5]} #{attrs[4]})'), 900913), 1000), #{DB_SRID})) WHERE id = #{loc.id}")
       loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
+
+      i += 1
     end
   end
 end
