@@ -1,4 +1,5 @@
 require 'bundler/capistrano'
+require 'puma/capistrano'
 
 # need to use a login shell so rbenv loads
 default_run_options[:shell] = '/bin/bash --login'
