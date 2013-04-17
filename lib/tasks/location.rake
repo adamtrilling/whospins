@@ -236,9 +236,11 @@ namespace :location do
     num_records = %x{wc -l #{DATA_DIR}/#{cat}/#{tsvfile}}.split.first.to_i
     puts "#{cat} file contains #{num_records} records."
 
-    i = 1
+    i = 0
     File.open("#{DATA_DIR}/#{cat}/#{tsvfile}").each do |record|
       attrs = record.force_encoding('ISO-8859-1').encode('UTF-8').split("\t")
+
+      i += 1
 
       # for now, only load supported countries
       next unless (['US'].include?(attrs[8]))
@@ -281,8 +283,6 @@ namespace :location do
 
       loc.connection.update_sql("UPDATE locations SET raw_area = ST_Multi(ST_Transform(ST_Expand(ST_Transform(ST_GeomFromEWKT('SRID=4326;POINT(#{attrs[5]} #{attrs[4]})'), 900913), 1000), #{DB_SRID})) WHERE id = #{loc.id}")
       loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
-
-      i += 1
     end
   end
 end
