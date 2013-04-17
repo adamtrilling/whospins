@@ -76,9 +76,6 @@ GEM
     execjs (1.4.0)
       multi_json (~> 1.0)
     fastercsv (1.5.5)
-    ffi (1.7.0)
-    ffi-geos (0.1.1)
-      ffi (>= 1.0.0)
     haml (4.0.1)
       tilt
     haml-rails (0.4)
@@ -195,7 +192,6 @@ DEPENDENCIES
   binding_of_caller
   capistrano
   coffee-rails (~> 4.0.0.beta1)
-  ffi-geos
   haml
   haml-rails
   jbuilder
