@@ -1,1 +1,1 @@
-RGeo::Geos.preferred_native_interface = :ffi
+RGeo::Geos.preferred_native_interface = :capi
