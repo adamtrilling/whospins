@@ -17,9 +17,9 @@ set :use_sudo, false
 
 set :deploy_to, "/var/www/#{application}"
 
-role :web, "www.whospins.com"
-role :app, "www.whospins.com"
-role :db,  "www.whospins.com", :primary => true
+role :web, "app1.whospins.com"
+role :app, "app1.whospins.com"
+role :db,  "app1.whospins.com", :primary => true
 
 # if you want to clean up old releases on each deploy uncomment this:
 # after "deploy:restart", "deploy:cleanup"
