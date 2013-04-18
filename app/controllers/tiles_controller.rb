@@ -33,12 +33,8 @@ class TilesController < ApplicationController
         'fill' => '#CCCCCC'
       }
 
-      # font styles vary by OS :(
-      if (Rails.env == 'development')
-        font = 'Avenir Light, Light Oblique 9'
-      else
-        font = 'DejaVu Sans,DejaVu Sans Light 9'
-      end
+      font = 'Roboto Light 9'
+      Rails.logger.info("font = #{font}")
 
       label_style = {
         'text-field' => 'name',
