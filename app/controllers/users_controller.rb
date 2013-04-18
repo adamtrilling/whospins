@@ -11,6 +11,15 @@ class UsersController < ApplicationController
     end
 
     if (@user.save)
+      # expire the map overlays.  we want to expire ALL of them, 
+      # which we can't do using exipre_page.
+      FileUtils.rm_rf(
+        File.join(
+          Whospins::Application.config.action_controller.page_cache_directory, 
+            'locations', 'overlay'
+        )
+      )
+
       status = "OK"
     else
       status = "Failed to save user"

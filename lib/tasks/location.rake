@@ -11,7 +11,7 @@ namespace :location do
 
     puts "Removing existing data"
     Location.destroy_all
-    FileUtils.rm_rf(File.join(Rails.root, 'public', 'tiles'))
+    FileUtils.rm_rf(File.join(Whospins::Application.config.action_controller.page_cache_directory, 'tiles'))
 
     puts "Loading data - DB_SRID = #{DB_SRID}"
 

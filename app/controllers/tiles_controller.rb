@@ -2,7 +2,8 @@ require 'simpler_tiles'
 
 class TilesController < ApplicationController
 
-  TILE_CACHE = File.join(Rails.root, 'public', 'tiles')
+  caches_page :show
+
   COUNTRY_LIST = ['United States', 'Canada']
 
   def show
@@ -92,30 +93,11 @@ class TilesController < ApplicationController
 
     end
 
-    png = map.to_png
-    if (png)
-      # cache the tile such that future accesses won't even hit rails
-      unless (File.directory?(File.join(TILE_CACHE)))
-        Dir.mkdir(File.join(TILE_CACHE))
-      end
-
-      unless (File.directory?(File.join(TILE_CACHE, params[:z])))
-        Dir.mkdir(File.join(TILE_CACHE, params[:z]))
-      end
-
-      unless (File.directory?(File.join(TILE_CACHE, params[:z], params[:x])))
-        Dir.mkdir(File.join(TILE_CACHE, params[:z], params[:x]))
-      end
-
-      File.open(File.join(TILE_CACHE, params[:z], params[:x], "#{params[:y]}.png"), 'wb') do |file|
-        file.write(map.to_png)
-      end
-
-      # send the tile to the browser
-      send_data map.to_png, :type => "image/png", :filename => "#{params[:y]}.png"
-    else
+    unless (map.to_png)
       Rails.logger.info("tile was empty")
       raise "empty tile"
     end
+
+    send_data map.to_png, :type => "image/png", :filename => "#{params[:y]}.png"
   end
 end

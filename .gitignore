@@ -20,6 +20,8 @@
 /config/keys.yml
 #/config/database.yml
 
-# ignore shapefiles and tiles
+# ignore shapefiles and caches
 /lib/data
 /public/tiles
+/public/locations
+/public/cache
