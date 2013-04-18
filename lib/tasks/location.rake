@@ -233,13 +233,19 @@ namespace :location do
       system unzip_cmd
     end
 
+    num_records = %x{wc -l #{DATA_DIR}/#{cat}/#{tsvfile}}.split.first.to_i
+    puts "#{cat} file contains #{num_records} records."
+
+    i = 0
     File.open("#{DATA_DIR}/#{cat}/#{tsvfile}").each do |record|
       attrs = record.force_encoding('ISO-8859-1').encode('UTF-8').split("\t")
+
+      i += 1
 
       # for now, only load supported countries
       next unless (['US'].include?(attrs[8]))
 
-      puts "Importing city #{attrs[1]}, #{attrs[10]}, #{attrs[8]}"
+      puts "(#{i} of #{num_records}) #{attrs[1]}, #{attrs[10]}, #{attrs[8]}"
 
       country = Location.where("category = 'country' AND props -> 'iso_a2' = '#{attrs[8]}'").first
 
