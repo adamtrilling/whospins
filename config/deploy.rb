@@ -25,9 +25,10 @@ role :db,  "app1.whospins.com", :primary => true
 # after "deploy:restart", "deploy:cleanup"
 
 namespace :deploy do
-  desc "Created shared config directories"
-  task :created_shared_config do
+  desc "Created shared directories"
+  task :created_shared_dirs do
     run "mkdir -p #{shared_path}/config"
+    run "mkdir -p #{shared_path}/sockets"
   end
 
   desc "Symlink shared configs and folders on each release."
@@ -36,5 +37,5 @@ namespace :deploy do
   end
 end
 
-after 'deploy:setup', 'deploy:created_shared_config'
+after 'deploy:setup', 'deploy:created_shared_dirs'
 after 'deploy:update_code', 'deploy:symlink_shared'
