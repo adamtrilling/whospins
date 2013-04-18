@@ -1,8 +1,7 @@
 defaults: &base
   adapter: postgis
   host: localhost  
-  pool: 5
-  timeout: 30000
+  pool: 20
   postgis_extension: ['postgis', 'hstore']
 
 development: 
