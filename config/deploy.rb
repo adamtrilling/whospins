@@ -29,11 +29,13 @@ namespace :deploy do
   task :created_shared_dirs do
     run "mkdir -p #{shared_path}/config"
     run "mkdir -p #{shared_path}/sockets"
+    run "mkdir -p #{shared_path}/cache"
   end
 
   desc "Symlink shared configs and folders on each release."
   task :symlink_shared do
     run "ln -nfs #{shared_path}/config/keys.yml #{release_path}/config/keys.yml"
+    run "ln -nfs #{shared_path}/cache/ #{release_path}/public/cache"
   end
 end
 
