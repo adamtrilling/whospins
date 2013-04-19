@@ -1,5 +1,4 @@
 require 'bundler/capistrano'
-require 'puma/capistrano'
 
 # need to use a login shell so rbenv loads
 default_run_options[:shell] = '/bin/bash --login'
@@ -36,6 +35,11 @@ namespace :deploy do
   task :symlink_shared do
     run "ln -nfs #{shared_path}/config/keys.yml #{release_path}/config/keys.yml"
     run "ln -nfs #{shared_path}/cache/ #{release_path}/public/cache"
+  end
+
+  desc "Zero-downtime restart of Unicorn"
+  task :restart, :except => { :no_release => true } do
+    run "kill -s USR2 `cat #{shared_path}/run/unicorn.pid`"
   end
 end
 
