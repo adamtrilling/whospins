@@ -1,5 +1,5 @@
 class LocationsController < ApplicationController
-  caches_page :index, :overlay
+  caches_page :overlay, :children
 
   def overlay
     # user counts needs to be a subquery table so that we can use the counts

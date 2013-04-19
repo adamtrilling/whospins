@@ -95,5 +95,16 @@ $('#location-form').submit(function(event) {
       }
     }
   });
+
+  request.done(function(result) {
+    console.log(result);
+    if (result['status'] == "OK") {
+      $form.find('#location-save').addClass('btn-success');
+    }
+    else {
+      $form.find('#location-save').addClass('btn-danger');
+      $('#location-save-status').html(result['status']);
+    }
+  });
   return false;
 });
