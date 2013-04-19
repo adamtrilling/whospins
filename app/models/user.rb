@@ -25,12 +25,17 @@ class User < ActiveRecord::Base
   def set_location_numbers
     # cache the location numbers.  it saves a TON of time
     # in generating overlays.
-    connection.execute("
+    User.transaction do 
+      connection.execute("
+UPDATE locations SET num_users = 0
+ WHERE location_id NOT IN (SELECT location_id FROM locations_users)")
+      connection.execute("
 UPDATE locations SET num_users = subquery.num 
   FROM (SELECT location_id, count(user_id) as num
           FROM locations_users 
       GROUP BY location_id) AS subquery
  WHERE locations.id = subquery.location_id")
+    end
   end
 
 end
