@@ -28,7 +28,7 @@ namespace :deploy do
   desc "Created shared directories"
   task :created_shared_dirs do
     run "mkdir -p #{shared_path}/config"
-    run "mkdir -p #{shared_path}/sockets"
+    run "mkdir -p #{shared_path}/run"
     run "mkdir -p #{shared_path}/cache"
   end
 
