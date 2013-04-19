@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 # framework
 gem 'rails', '4.0.0.beta1'
 gem 'actionpack-page_caching'
-gem 'puma', :github => 'puma/puma'
+gem 'unicorn'
 
 # database
 gem 'pg'
