@@ -5,19 +5,22 @@ defaults: &base
   postgis_extension: ['postgis', 'hstore']
 
 development: 
+  <<: *base
   database: whospins_development
   username: spinmap
   password: 
   su_username: adam
   su_password: 
-  <<: *base
+
 
 test:
-  database: whospins_test
   <<: *base
+  database: whospins_test
+
 
 production:
+  <<: *base
   database: whospins_production
+  host: db1.whospins.com
   username: whospins
   su_username: postgres
-  <<: *base
