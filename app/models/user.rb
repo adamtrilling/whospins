@@ -28,7 +28,7 @@ class User < ActiveRecord::Base
     User.transaction do 
       connection.execute("
 UPDATE locations SET num_users = 0
- WHERE location_id NOT IN (SELECT location_id FROM locations_users)")
+ WHERE id NOT IN (SELECT location_id FROM locations_users)")
       connection.execute("
 UPDATE locations SET num_users = subquery.num 
   FROM (SELECT location_id, count(user_id) as num
