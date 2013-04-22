@@ -32,6 +32,9 @@ gem 'therubyracer'
 gem 'omniauth'
 gem 'omniauth-ravelry'
 
+# other
+gem 'mechanize'
+
 # debugging
 gem 'quiet_assets'
 
