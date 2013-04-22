@@ -100,6 +100,8 @@ $('#location-form').submit(function(event) {
     console.log(result);
     if (result['status'] == "OK") {
       $form.find('#location-save').addClass('btn-success');
+      getOverlay();
+      loadOverlay();
     }
     else {
       $form.find('#location-save').addClass('btn-danger');

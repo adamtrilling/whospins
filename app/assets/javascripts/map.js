@@ -50,6 +50,24 @@ function onEachFeature(feature, layer) {
   });
 }
 
+function getOverlay() {
+  $.each(geojsonLayers, function(key) {
+    // grab the geojson layer
+    $.ajax({
+      type: "GET",
+      url: "/locations/overlay/" + key + ".json",
+      dataType: 'json',
+      async: false,
+      success: function(response) {
+        geojsonLayers[key] = L.geoJson(response, {
+          style: style,
+          onEachFeature: onEachFeature
+        });
+      },
+    });  
+  });
+}
+
 function loadOverlay() {
   if (map.getZoom() >= 6) {
     if (map.hasLayer(geojsonLayers['state'])) {
@@ -87,22 +105,7 @@ var geojsonLayers = {
 };
 var geojsonLayer = null;
 
-$.each(geojsonLayers, function(key) {
-  // grab the geojson layer
-  $.ajax({
-    type: "GET",
-    url: "/locations/overlay/" + key + ".json",
-    dataType: 'json',
-    async: false,
-    success: function(response) {
-      geojsonLayers[key] = L.geoJson(response, {
-        style: style,
-        onEachFeature: onEachFeature
-      });
-    },
-  });  
-});
-
+getOverlay();
 loadOverlay();
 map.on('zoomend', loadOverlay);
 
