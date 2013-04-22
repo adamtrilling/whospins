@@ -89,6 +89,23 @@ function loadOverlay() {
   }
 }
 
+function refreshOverlay() {
+  if (map.getZoom() >= 6) {
+    if (map.hasLayer(geojsonLayers['county'])) {
+      map.removeLayer(geojsonLayers['county']);
+    }
+    map.addLayer(geojsonLayers['county']);
+    geojsonLayer = geojsonLayers['county'];
+  }
+  else {
+    if (map.hasLayer(geojsonLayers['state'])) {
+      map.removeLayer(geojsonLayers['state']);
+    }
+    map.addLayer(geojsonLayers['state']);
+    geojsonLayer = geojsonLayers['state'];
+  }  
+}
+
 // set up the map
 var map = L.map('map', {
   minZoom: 3,
