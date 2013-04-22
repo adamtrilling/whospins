@@ -2,6 +2,11 @@ class LocationsController < ApplicationController
   caches_page :overlay, :children
 
   def overlay
+    # these are pesky in browser-side caches.  expire them immediately and
+    # let the browser get them from the server cache until I can figure
+    # out something smarter
+    expires_now
+
     # user counts needs to be a subquery table so that we can use the counts
     # in the window function and the where clause.  this won't work in any 
     # database other than postgresql.
