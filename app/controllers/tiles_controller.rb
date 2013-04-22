@@ -16,7 +16,7 @@ class TilesController < ApplicationController
     map = SimplerTiles::Map.new do |m|
       m.srs     = "EPSG:4326"
       m.slippy params[:x].to_i, params[:y].to_i, params[:z].to_i
-      m.bgcolor = '#B4E3F0'
+      m.bgcolor = '#A5BFDD'
       m.buffer = 32
 
       # find locations in the current buffer
