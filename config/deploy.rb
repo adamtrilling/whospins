@@ -27,19 +27,20 @@ namespace :deploy do
   desc "Created shared directories"
   task :created_shared_dirs do
     run "mkdir -p #{shared_path}/config"
-    run "mkdir -p #{shared_path}/run"
     run "mkdir -p #{shared_path}/cache"
+    run "mkdir -p #{shared_path}/tmp"
   end
 
   desc "Symlink shared configs and folders on each release."
   task :symlink_shared do
     run "ln -nfs #{shared_path}/config/keys.yml #{release_path}/config/keys.yml"
     run "ln -nfs #{shared_path}/cache/ #{release_path}/public/cache"
+    run "ln -nfs #{shared_path}/tmp/ #{release_path}/tmp"
   end
 
   desc "Zero-downtime restart of Unicorn"
   task :restart, :except => { :no_release => true } do
-    run "kill -s USR2 `cat #{shared_path}/run/unicorn.pid`"
+    run "touch #{shared_path}/tmp/restart.txt"
   end
 end
 
