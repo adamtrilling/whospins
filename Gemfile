@@ -13,7 +13,7 @@ gem 'activerecord-postgis-adapter', :github => 'dazuma/activerecord-postgis-adap
 # gis
 # gem 'ffi-geos'
 gem 'rgeo-shapefile'
-# gem 'simpler-tiles', :require => 'simpler_tiles', :github => 'propublica/simpler-tiles'
+gem 'simpler-tiles', :require => 'simpler_tiles', :github => 'propublica/simpler-tiles'
 
 # front end
 group :assets do
