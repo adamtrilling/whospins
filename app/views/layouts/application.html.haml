@@ -25,8 +25,9 @@
     .container
       .row
         = yield
-      %footer
-        %p &copy; Company 2012
+    #footer
+      .container
+        = render 'layouts/footer'
     /
       Javascripts
       \==================================================
