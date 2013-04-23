@@ -22,7 +22,7 @@
 }
 
 /* Lifted shamelessly from twitter bootstrap's docs */
-#location {
+.label-box {
   position: relative;
   margin: 15px 0;
   padding: 39px 19px 14px;
@@ -32,10 +32,10 @@
   -webkit-border-radius: 4px;
      -moz-border-radius: 4px;
           border-radius: 4px;
+
 }
 
-#location:after {
-  content: "Your Location";
+.label-box:after {
   position: absolute;
   top: -1px;
   left: -1px;
@@ -48,6 +48,14 @@
   -webkit-border-radius: 4px 0 4px 0;
      -moz-border-radius: 4px 0 4px 0;
           border-radius: 4px 0 4px 0;
+}
+
+#location:after {
+  content: "Your Location";
+}
+
+#instructions:after {
+  content: "Find spinners near you";
 }
 
 .info {
