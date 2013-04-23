@@ -5,6 +5,12 @@ GIT
     activerecord-postgis-adapter (0.6.2.nonrelease)
       rgeo-activerecord (~> 0.5.0)
 
+GIT
+  remote: git://github.com/propublica/simpler-tiles.git
+  revision: 9ee1d86454cd7a5389eff0dd2d44c7ac2167c82d
+  specs:
+    simpler-tiles (0.0.8)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -215,5 +221,6 @@ DEPENDENCIES
   rails (= 4.0.0.beta1)
   rgeo-shapefile
   sass-rails (~> 4.0.0.beta1)
+  simpler-tiles!
   therubyracer
   uglifier (>= 1.0.3)
