@@ -24,9 +24,9 @@ class Location < ActiveRecord::Base
     if (category == 'country')
       name
     elsif (category == 'state' || category == 'city')
-      "#{name}, #{parent.name}"
+      "#{name}, #{parents.first.name}"
     elsif (category == 'county')
-      "#{name} County, #{parent.name}"
+      "#{name} County, #{parents.first.name}"
     end
   end
 
