@@ -1,17 +1,14 @@
 defaults: &base
   adapter: postgis
-  host: localhost  
+  host: localhost
+  username: whospins
+  su_username: postgres 
   pool: 20
   postgis_extension: ['postgis', 'hstore']
 
 development: 
   <<: *base
   database: whospins_development
-  username: spinmap
-  password: 
-  su_username: adam
-  su_password: 
-
 
 test:
   <<: *base
@@ -22,5 +19,3 @@ production:
   <<: *base
   database: whospins_production
   host: db1.whospins.com
-  username: whospins
-  su_username: postgres
