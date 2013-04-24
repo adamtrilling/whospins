@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20130302024307) do
+ActiveRecord::Schema.define(version: 20130423234942) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,7 +19,6 @@ ActiveRecord::Schema.define(version: 20130302024307) do
   enable_extension "hstore"
 
   create_table "locations", force: true do |t|
-    t.integer "parent_id"
     t.string  "name"
     t.string  "category"
     t.hstore  "props"
@@ -27,6 +26,7 @@ ActiveRecord::Schema.define(version: 20130302024307) do
     t.integer "num_users"
     t.spatial "raw_area",    limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial "area",        limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.hstore  "parents"
   end
 
   add_index "locations", ["always_show"], :name => "index_locations_on_always_show"
@@ -34,7 +34,7 @@ ActiveRecord::Schema.define(version: 20130302024307) do
   add_index "locations", ["category"], :name => "index_locations_on_category"
   add_index "locations", ["name"], :name => "index_locations_on_name"
   add_index "locations", ["num_users"], :name => "index_locations_on_num_users"
-  add_index "locations", ["parent_id"], :name => "index_locations_on_parent_id"
+  add_index "locations", ["parents"], :name => "locations_parents_index"
   add_index "locations", ["props"], :name => "locations_props_index"
   add_index "locations", ["raw_area"], :name => "index_locations_on_raw_area", :spatial => true
 

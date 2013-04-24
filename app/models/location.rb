@@ -2,9 +2,9 @@ class Location < ActiveRecord::Base
   has_and_belongs_to_many :users
 
   # we don't need a full tree, so just define the necessary accessors
-  def parent
+  def parents
     begin
-      Location.find(self.parent_id)
+      Location.find(self.parents.keys)
     rescue ActiveRecord::RecordNotFound
       nil
     end
@@ -14,7 +14,7 @@ class Location < ActiveRecord::Base
     # recurse up the tree until we get a country
     current_loc = self
     while (current_loc.category != 'country')
-      current_loc = current_loc.parent
+      current_loc = current_loc.parents
     end
 
     current_loc

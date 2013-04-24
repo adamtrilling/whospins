@@ -54,7 +54,10 @@ class TilesController < ApplicationController
         end
 
         # states/provinces in supported countries
-        l.query buffered_locations.select("name, raw_area").where(:parent_id => supported_countries.to_a.map(&:id), :category => 'state').to_sql do |q|
+        supported_countries_array = "#{supported_countries.to_a.map {|c| "'#{c.id}'"}.join(',')}"
+        l.query buffered_locations.select("name, raw_area").where(
+          "parents ?| ARRAY[#{supported_countries_array}]").where(
+          :category => 'state').to_sql do |q|
           # thin white border, gray fill
           style = line_style.merge('stroke' => '#F0F0F0')
 

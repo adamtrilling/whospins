@@ -27,7 +27,8 @@ class LocationsController < ApplicationController
 
   def children
     @locations = Location.where(
-      :parent_id => params[:id]
+      # you can't use the ? operator with bind varibles...
+      ["exist(parents, ?)", params[:id]]
     ).select(
       :id, :name, :category
     ).group_by(
