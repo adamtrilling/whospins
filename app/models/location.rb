@@ -4,9 +4,9 @@ class Location < ActiveRecord::Base
   # we don't need a full tree, so just define the necessary accessors
   def parents
     begin
-      Location.find(self.parents.keys)
+      Location.find(self.read_attribute(:parents).keys)
     rescue ActiveRecord::RecordNotFound
-      nil
+      []
     end
   end
 
