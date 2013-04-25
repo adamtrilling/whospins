@@ -85,77 +85,7 @@ namespace :location do
             :parent_id => parent.nil? ? nil : parent.id)]
         }
       },
-      # {
-      #   'category' => 'county',
-      #   'url' => 'http://www.baruch.cuny.edu/geoportal/data/esri/usa/census/counties.zip',
-      #   'zipfile' => 'counties.zip',
-      #   'shapefile' => 'counties.shp',
-      #   'srid' => '4326',
-      #   'processor' => Proc.new { |category, record| 
-      #     next if record.geometry.nil?
-
-      #     parent = Location.where("category = 'state' AND props -> 'fips' = '#{record["STATE_FIPS"]}'").first
-
-      #     [Location.create!(
-      #       :name => record["NAME"],
-      #       :category => category,
-      #       :props => {'fips' => record['CNTY_FIPS']},
-      #       :parent_id => parent.nil? ? nil : parent.id)]
-      #   }
-      # },
-      # {
-      #   'category' => 'county',
-      #   'url' => 'http://www.baruch.cuny.edu/geoportal/data/esri/usa/census/dtl_cnty.zip',
-      #   'zipfile' => 'dtl_cnty.zip',
-      #   'shapefile' => 'dtl_cnty.shp',
-      #   'srid' => '4326',
-      #   'processor' => Proc.new { |category, record|
-      #     next if record.geometry.nil?
-
-      #     # skip existing counties
-      #     next if (Location.where("category = 'county' AND props -> 'fips' = #{record["CNTY_FIPS"]}"))
-
-      #     parent = Location.where("category = 'state' AND props -> 'fips' = '#{record["STATE_FIPS"]}'").first
-
-      #     [Location.create!(
-      #       :name => record["NAME"],
-      #       :category => category,
-      #       :props => {'fips' => record['CNTY_FIPS']},
-      #       :parent_id => parent.nil? ? nil : parent.id)]
-      #   }
-      # },
     ]
-
-    # # the US Census distributes files that are named
-    # # by FIPS code
-    # ["01", "02", "04", "05", "06", "08", "09", "10",
-    #  "11", "12", "13", "15", "16", "17", "18", "19",
-    #  "20", "21", "22", "23", "24", "25", "26", "28",
-    #  "29", "30", "31", "32", "33", "34", "35", "36",
-    #  "37", "38", "39", "40", "41", "42", "44", "45",
-    #  "46", "47", "48", "49", "50", "51", "53", "54",
-    #  "55", "56"].each do |fips|
-
-    #   # counties
-    #   shapefiles << {
-    #     'category' => 'county',
-    #     'area_type' => 'area',
-    #     'url' => "http://www2.census.gov/geo/tiger/GENZ2010/gz_2010_#{fips}_060_00_500k.zip",
-    #     'zipfile' => "gz_2010_#{fips}_060_00_500k.zip",
-    #     'shapefile' => "gz_2010_#{fips}_060_00_500k.shp",
-    #     'srid' => '4269',
-    #     'processor' => Proc.new { |category, record| 
-    #       parent = Location.where("category = 'state' AND props -> 'fips' = '#{fips}'").first
-
-    #       [Location.create!(
-    #         :name => record["NAME"].force_encoding('ISO-8859-1').encode('UTF-8'),
-    #         :category => category,
-    #         :props => {},
-    #         :parent_id => parent.id
-    #       )]
-    #     }
-    #   }
-    # end
 
     shapefiles.each do |attrs|
       cat = attrs['category']
