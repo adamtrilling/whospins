@@ -1,17 +1,20 @@
 require 'fileutils'
 
 namespace :location do
-  desc "Load data from shapefiles from scratch"
+  desc "Remove existing location data"
+  task :destroy => :environment do
+    puts "Removing existing data"
+    Location.destroy_all
+    FileUtils.rm_rf(File.join(Whospins::Application.config.action_controller.page_cache_directory, 'tiles'))
+  end
+
+  desc "Load data from shapefiles, creating or updating the Locations table"
   task :load => :environment do
 
     DATA_DIR = Rails.root.join('lib', 'data', 'location')
     FileUtils.mkdir_p DATA_DIR
 
     DB_SRID = Location.connection.select_all("SELECT Find_SRID('public', 'locations', 'raw_area') AS srid").first["srid"]
-
-    puts "Removing existing data"
-    Location.destroy_all
-    FileUtils.rm_rf(File.join(Whospins::Application.config.action_controller.page_cache_directory, 'tiles'))
 
     puts "Loading data - DB_SRID = #{DB_SRID}"
 
@@ -31,11 +34,15 @@ namespace :location do
           # skip Antarctica - PostGIS doesn't know how to reproject it
           next if (record["name"] == 'Antarctica')
 
-          [Location.create!(
+          # check whether the country already exists
+          [Location.where(
+            :category => 'country').where(
+            ["lower(name) = ?", record["name"].downcase]).first ||
+           Location.create!(
             :name => record["name"],
             :category => category,
             :props => { 'iso_a2' => record["iso_a2"] },
-            :parent_id => nil)]
+            :parents => {})]
         }
       },
       {
@@ -50,22 +57,36 @@ namespace :location do
 
           parent = Location.where("category = 'country' AND props -> 'iso_a2' = '#{record["iso_a2"]}'").first
 
-          # only the US uses code_local, from which the FIPS code can be parsed
-          uids = { 'postal' => record['postal'] }
-          if (record['iso_a2'] == 'US')
-            uids['fips'] = record["code_local"][2..3]
+          # check for existing state
+          location = Location.where(
+            :category => 'state').where(
+            :name => record["name"])
 
-            # this file has the wrong FIPS code for MN
-            if (uids['postal'] == "MN")
-              uids['fips'] = '27'
-            end
+          if (parent)
+            location = location.where(["exist(parents, ?::text)", parent.id])
           end
 
-          [Location.create!(
-            :name => record["name"],
-            :category => category,
-            :props => uids,
-            :parent_id => parent.nil? ? nil : parent.id)]
+          if (location.first.nil?) 
+            # only the US uses code_local, from which the FIPS code can be parsed.
+            # non-US FIPS codes will be retrieved from geonames later.
+            uids = { 'postal' => record['postal'] }
+            if (record['iso_a2'] == 'US')
+              uids['fips'] = record["code_local"][2..3]
+
+              # this file has the wrong FIPS code for MN
+              if (uids['postal'] == "MN")
+                uids['fips'] = '27'
+              end
+            end
+
+            [Location.create!(
+              :name => record["name"],
+              :category => category,
+              :props => uids,
+              :parents => parent.nil? ? {} : {parent.id => 'in'})]
+          else
+            [location.first]
+          end
         }
       },
       {
@@ -76,13 +97,25 @@ namespace :location do
         'srid' => '4269',
         'tolerance' => '2000',
         'processor' => Proc.new {|category, record|
+          # i hate encoding
+          name = record["NAME"].force_encoding('ISO-8859-1').encode('UTF-8')
           parent = Location.where("category = 'state' AND props -> 'fips' = '#{record["STATEFP"]}'").first
 
-          [Location.create!(
-            :name => record["NAME"].force_encoding('ISO-8859-1').encode('UTF-8'),
+          # check for existing county
+          location = Location.where(
+            :category => 'county').where(
+            :name => name)
+
+          if (parent)
+            location = location.where(["exist(parents, ?::text)", parent.id])
+          end
+
+          [location.first || 
+          Location.create!(
+            :name => name,
             :category => category,
             :props => {'fips' => record["COUNTYFP"]},
-            :parent_id => parent.nil? ? nil : parent.id)]
+            :parents => parent.nil? ? {} : {parent.id => 'in'})]
         }
       },
     ]
@@ -145,6 +178,41 @@ namespace :location do
       end
     end
 
+    # geonames has FIPS codes for non-US states/provinces
+    url = 'http://download.geonames.org/export/dump/admin1CodesASCII.txt'
+    txtfile = 'admin1CodesASCII.txt'
+    puts "downloading file #{url}"
+    unless (File.file?(File.join(DATA_DIR, txtfile)))
+      curl_cmd = "curl -L -o #{DATA_DIR}/#{txtfile} #{url}"
+      system curl_cmd
+    end
+
+    File.open("#{DATA_DIR}/#{txtfile}").each do |record|
+      attrs = record.force_encoding('ISO-8859-1').encode('UTF-8').split("\t")
+
+      codes = /^(?<country>[A-Z]{2})\.(?<fips>\w+)/.match(attrs[0])
+
+      # find the state
+      country = Location.where(category: 'country').where(
+        ["props -> 'iso_a2' = ?", codes[:country]])
+      
+      unless (country.first)
+        next
+      end
+
+      state = Location.where(category: 'state').where(
+        ["lower(name) = ?", attrs[1].downcase]).where(
+        "parents ? #{country.first.id}::text")
+
+      unless (state.first)
+        next
+      end
+
+      puts "#{state.first.name}, #{country.name} - FIPS = #{codes[:fips]}"
+
+      state.connection.execute("UPDATE locations SET props = props || hstore('fips', '#{codes[:fips]}') WHERE id = #{state.first.id}")
+    end
+
     # the best city list I could find is a TSV from geonames.  it isn't a shapefile, but 
     # shapes can be determined from points
     url = 'http://download.geonames.org/export/dump/cities1000.zip'
@@ -173,7 +241,7 @@ namespace :location do
       i += 1
 
       # for now, only load supported countries
-      next unless (['US'].include?(attrs[8]))
+      next unless (['US', 'CA'].include?(attrs[8]))
 
       puts "(#{i} of #{num_records}) #{attrs[1]}, #{attrs[10]}, #{attrs[8]}"
 
@@ -183,36 +251,51 @@ namespace :location do
       next if country.nil?
 
       # parent_id progresses down the tree as we find smaller admin divisions
-      parent_id = country.id
+      parent_ids = [country.id]
 
       # per docs, some countries use ISO codes, some countries use FIPS codes
       if (['US', 'CH', 'BE', 'ME'].include?(attrs[8]))
-        state = Location.where("category = 'state' AND parent_id = #{country.id} AND props -> 'postal' = '#{attrs[10]}'").first
+        state = Location.where("category = 'state' AND parents ? '#{country.id}' AND props -> 'postal' = '#{attrs[10]}'").first
       else
-        state = Location.where("category = 'state' AND parent_id = #{country.id} AND props -> 'fips' = '#{attrs[10]}'").first
+        state = Location.where("category = 'state' AND parents ? '#{country.id}' AND props -> 'fips' = '#{attrs[10]}'").first
       end
 
       unless (state.nil?)
-        parent_id = state.id
+        parent_ids = [state.id]
       end
 
-      # find the county, if it exists
-      county = Location.where("category = 'county' AND parent_id = #{parent_id} AND raw_area ~ ST_GeomFromEWKT('SRID=4326;POINT(#{attrs[5]} #{attrs[4]})')").first
+      # find the counties, if any
+      counties = Location.where(category: 'county').where(
+        "parents ? '#{parent_ids.first}'").where(
+        "raw_area ~ ST_GeomFromEWKT('SRID=4326;POINT(#{attrs[5]} #{attrs[4]})')")
 
-      unless (county.nil?)
-        parent_id = county.id
+      unless (counties.empty?)
+        parent_ids = counties.collect {|c| c.id }
       end
 
-      loc = Location.create!(
-        :name => attrs[1],
-        :category => cat,
-        :props => {'pop' => attrs[14]},
-        :always_show => (['PPLA', 'PPLC'].include?(attrs[7])),
-        :parent_id => parent_id
-      )
+      # check for existing city - we can isolate by population until 
+      # the file is updated, at which point the parenting issues will
+      # hopefully be sorted out
+      location = Location.where(
+        :category => 'city', :name => attrs[1]).where(
+        "props -> 'pop' = '#{attrs[14]}'"
+      ).first
 
-      loc.connection.update_sql("UPDATE locations SET raw_area = ST_Multi(ST_Transform(ST_Expand(ST_Transform(ST_GeomFromEWKT('SRID=4326;POINT(#{attrs[5]} #{attrs[4]})'), 900913), 1000), #{DB_SRID})) WHERE id = #{loc.id}")
-      loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
+      if (location)
+        location.parents = parent_ids.inject({}) { |h, id| h[id] = 'near'; h }
+        location.save!
+      else
+        location = Location.create!(
+          :name => attrs[1],
+          :category => cat,
+          :props => {'pop' => attrs[14]},
+          :always_show => (['PPLA', 'PPLC'].include?(attrs[7])),
+          :parents => parent_ids.inject({}) { |h, id| h[id] = 'near'; h }
+        )
+      end
+
+      location.connection.update_sql("UPDATE locations SET raw_area = ST_Multi(ST_Transform(ST_Expand(ST_Transform(ST_GeomFromEWKT('SRID=4326;POINT(#{attrs[5]} #{attrs[4]})'), 900913), 1000), #{DB_SRID})) WHERE id = #{location.id}")
+      location.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{location.id}")
     end
   end
 end
