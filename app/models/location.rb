@@ -1,7 +1,11 @@
 class Location < ActiveRecord::Base
   has_and_belongs_to_many :users
 
-  # we don't need a full tree, so just define the necessary accessors
+  # the parents hash in the database is pretty useless, 
+  # since it just returns ids as text, so replace it with
+  # a real accessor.
+  # TODO: this will fail if ANY of the parents isn't found.
+  #       if one parent is missing, it should return the rest.
   def parents
     begin
       Location.find(self.read_attribute(:parents).keys)
