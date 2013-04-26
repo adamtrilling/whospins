@@ -44,3 +44,4 @@ end
 
 after 'deploy:setup', 'deploy:created_shared_dirs'
 after 'deploy:update_code', 'deploy:symlink_shared'
+before 'deploy:restart', 'deploy:migrate'
