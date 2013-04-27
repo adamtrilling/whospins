@@ -6,6 +6,7 @@ class UsersController < ApplicationController
     if (params[:location])
       @user.locations.clear
       params[:location].each do |cat, loc|
+        next if (loc.nil? || loc.blank?)
         @user.locations << Location.find(loc)
       end
     end
