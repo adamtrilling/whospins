@@ -82,7 +82,11 @@ $('#location-form').submit(function(event) {
       state = $form.find('select#state').val(),
       county = $form.find('select#county').val(),
       city = $form.find('select#city').val(),
-      url = $form.attr('action');
+      url = $form.attr('action'),
+      button = $form.find('#location-save');
+
+  button.removeClass('btn-success');
+  button.button('loading')
 
   request = $.ajax(url, { 
     type: 'PUT',
@@ -97,14 +101,14 @@ $('#location-form').submit(function(event) {
   });
 
   request.done(function(result) {
-    console.log(result);
+    $form.find('#location-save').button('saved')
     if (result['status'] == "OK") {
-      $form.find('#location-save').addClass('btn-success');
+      button.addClass('btn-success');
       getOverlay();
       refreshOverlay();
     }
     else {
-      $form.find('#location-save').addClass('btn-danger');
+      button.addClass('btn-danger');
       $('#location-save-status').html(result['status']);
     }
   });

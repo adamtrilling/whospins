@@ -22,5 +22,5 @@
             =select_tag 'city', ''
         .control-group
           .controls
-            =submit_tag "Save", :class => 'btn', :id => 'location-save'
+            =submit_tag "Save", :class => 'btn', :id => 'location-save', 'data-loading-text' => 'Saving...', 'data-saved-text' => 'Saved!'
             %span#location-save-status.text-error
