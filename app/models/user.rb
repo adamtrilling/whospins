@@ -1,8 +1,10 @@
 class User < ActiveRecord::Base
+  attr_accessor :old_location_ids
+
   has_and_belongs_to_many :locations
 
   before_save :set_location_names
-  after_save :set_location_numbers
+  after_save :update_location_numbers
 
   def self.create_with_omniauth(auth)
     create! do |user|
@@ -22,20 +24,32 @@ class User < ActiveRecord::Base
     end
   end
 
-  def set_location_numbers
+  def update_location_numbers
     # cache the location numbers.  it saves a TON of time
     # in generating overlays.
     User.transaction do 
       connection.execute("
+UPDATE locations SET num_users = num_users + 1 
+ WHERE id IN (#{location_ids.join(',')})")
+      connection.execute("
+UPDATE locations SET num_users = num_users - 1 
+ WHERE id IN (#{self.old_location_ids.join(',')})")
+    end
+  end
+
+  def self.set_location_numbers
+    # cache the location numbers.  it saves a TON of time
+    # in generating overlays.
+    User.transaction do
+      connection.execute("
 UPDATE locations SET num_users = 0
  WHERE id NOT IN (SELECT location_id FROM locations_users)")
       connection.execute("
-UPDATE locations SET num_users = subquery.num 
+UPDATE locations SET num_users = subquery.num
   FROM (SELECT location_id, count(user_id) as num
-          FROM locations_users 
+          FROM locations_users
       GROUP BY location_id) AS subquery
  WHERE locations.id = subquery.location_id")
     end
   end
-
 end

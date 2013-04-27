@@ -4,11 +4,8 @@ class UsersController < ApplicationController
 
     # handle the location, if given
     if (params[:location])
-      @user.locations.clear
-      params[:location].each do |cat, loc|
-        next if (loc.nil? || loc.blank?)
-        @user.locations << Location.find(loc)
-      end
+      @user.old_location_ids = @user.location_ids
+      @user.location_ids = params[:location].values
     end
 
     if (@user.save)

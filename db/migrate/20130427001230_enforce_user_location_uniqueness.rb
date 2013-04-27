@@ -9,7 +9,7 @@ class EnforceUserLocationUniqueness < ActiveRecord::Migration
       end
     end
 
-    User.last.set_location_numbers
+    User.set_location_numbers
 
     add_index :locations_users, [:location_id, :user_id], :unique => true
   end
