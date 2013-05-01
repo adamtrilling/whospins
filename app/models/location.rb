@@ -45,6 +45,7 @@ class Location < ActiveRecord::Base
   # converts the area to an array of points.  this makes it far simpler
   # for jbuilder to build geojson of multipolygons.
   def to_a
+    Rails.logger.info("*** area is nil? #{area.nil?}")
     return [] if area.nil?
 
     # stolen from rgeo-geojson

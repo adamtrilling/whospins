@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20130427001230) do
+ActiveRecord::Schema.define(version: 20130427194559) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(version: 20130427001230) do
     t.spatial "raw_area",    limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial "area",        limit: {:srid=>4326, :type=>"multi_polygon"}
     t.hstore  "parents"
+    t.float   "percentile",                                                default: 0.0
   end
 
   add_index "locations", ["always_show"], :name => "index_locations_on_always_show"
@@ -35,6 +36,7 @@ ActiveRecord::Schema.define(version: 20130427001230) do
   add_index "locations", ["name"], :name => "index_locations_on_name"
   add_index "locations", ["num_users"], :name => "index_locations_on_num_users"
   add_index "locations", ["parents"], :name => "locations_parents_index"
+  add_index "locations", ["percentile"], :name => "index_locations_on_percentile"
   add_index "locations", ["props"], :name => "locations_props_index"
   add_index "locations", ["raw_area"], :name => "index_locations_on_raw_area", :spatial => true
 

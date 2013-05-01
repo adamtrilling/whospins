@@ -7,16 +7,28 @@ class LocationsController < ApplicationController
     # out something smarter
     expires_now
 
-    # user counts needs to be a subquery table so that we can use the counts
-    # in the window function and the where clause.  this won't work in any 
-    # database other than postgresql.
-    @locations = Location.select(
-      "*, percent_rank() OVER (ORDER BY num_users)"
-    ).where(
-      :category => params[:id]
-    ).where(
-      "num_users > 0"
-    ).includes(:users)
+    @locations = Location.where("num_users > 0").includes(:users)
+
+    if (params[:id].to_i > 0)
+      # you can't use ? operators with bind parameters.  but we've already
+      # verified that params[:id] is an integer, so it is safe to pass without
+      # binding. 
+      # this query selects, by line:
+      # 1) the current location's children
+      # 2) the current location's siblings
+      # 3) all states (change to countries when there are more of them)
+      # 4) exclude the location itself and its country  
+      @locations = @locations.where("(
+parents ? '#{params[:id].to_i}' OR
+parents ?| (select akeys(parents) from locations where id = #{params[:id].to_i}) OR 
+category = 'state') AND
+id != #{params[:id].to_i} AND 
+id NOT IN (select skeys(parents)::integer FROM locations where id = #{params[:id].to_i})")
+    else
+      @locations = @locations.where(category: params[:id])
+    end
+
+    Rails.logger.info("overlay query: #{@locations.to_sql}")
 
     respond_to do |format|
       format.json do 

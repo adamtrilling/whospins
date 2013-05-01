@@ -40,6 +40,23 @@ function resetHighlight(e) {
 
 function zoomToFeature(e) {
   map.fitBounds(e.target.getBounds());
+
+  // update the sidebar with the list of users
+  props = e.target.feature.properties;
+
+  html = "<b>" + props.display_name + "</b><br/>"
+  for (var u in props.users) {
+    html = html + '<br /><img src="/assets/rav_link.gif"/>';
+    html = html + '<a href="http://www.ravelry.com/people/' + props.users[u].name + '">';
+    html = html + props.users[u].name + '</a>';
+  }
+  $('#userlist').html(html);
+
+  // if the feature was a country or a state, load 
+  // the overlay for the feature
+  if (props.category == 'country' || props.category == 'state') {
+    getOverlay(e.target.feature.id);
+  }
 }
 
 function onEachFeature(feature, layer) {
@@ -50,60 +67,27 @@ function onEachFeature(feature, layer) {
   });
 }
 
-function getOverlay() {
-  $.each(geojsonLayers, function(key) {
-    // grab the geojson layer
-    $.ajax({
-      type: "GET",
-      url: "/locations/overlay/" + key + ".json",
-      dataType: 'json',
-      async: false,
-      success: function(response) {
-        geojsonLayers[key] = L.geoJson(response, {
-          style: style,
-          onEachFeature: onEachFeature
-        });
-      },
-    });  
+function getOverlay(id) {
+  // remove the existing layer, if any
+  if (geojsonLayer && map.hasLayer(geojsonLayer)) {
+    map.removeLayer(geojsonLayer);
+  }
+
+  // grab the geojson layer
+  $.ajax({
+    type: "GET",
+    url: "/locations/overlay/" + id + ".json",
+    dataType: 'json',
+    async: false,
+    success: function(response) {
+      geojsonLayer = L.geoJson(response, {
+        style: style,
+        onEachFeature: onEachFeature
+      });
+
+      map.addLayer(geojsonLayer);
+    },
   });
-}
-
-function loadOverlay() {
-  if (map.getZoom() >= 6) {
-    if (map.hasLayer(geojsonLayers['state'])) {
-      map.removeLayer(geojsonLayers['state']);
-    }
-    if (!map.hasLayer(geojsonLayers['county'])) {
-      map.addLayer(geojsonLayers['county']);
-      geojsonLayer = geojsonLayers['county'];
-    }
-  }
-  else {
-    if (map.hasLayer(geojsonLayers['county'])) {
-      map.removeLayer(geojsonLayers['county']);
-    }
-    if (!map.hasLayer(geojsonLayers['state'])) {
-      map.addLayer(geojsonLayers['state']);
-      geojsonLayer = geojsonLayers['state'];
-    }
-  }
-}
-
-function refreshOverlay() {
-  if (map.getZoom() >= 6) {
-    if (map.hasLayer(geojsonLayers['county'])) {
-      map.removeLayer(geojsonLayers['county']);
-    }
-    map.addLayer(geojsonLayers['county']);
-    geojsonLayer = geojsonLayers['county'];
-  }
-  else {
-    if (map.hasLayer(geojsonLayers['state'])) {
-      map.removeLayer(geojsonLayers['state']);
-    }
-    map.addLayer(geojsonLayers['state']);
-    geojsonLayer = geojsonLayers['state'];
-  }  
 }
 
 // set up the map
@@ -115,16 +99,9 @@ var map = L.map('map', {
 var tileLayer = L.tileLayer('/tiles/{z}/{x}/{y}.png');
 map.addLayer(tileLayer).setView(new L.LatLng(38, -95), 3);
 
-// load the geoJSON layers
-var geojsonLayers = {
-  state: null,
-  county: null
-};
 var geojsonLayer = null;
 
-getOverlay();
-loadOverlay();
-map.on('zoomend', loadOverlay);
+getOverlay('state');
 
 // info box
 var info = L.control();
@@ -143,14 +120,14 @@ info.update = function (props) {
     html = '<b>' + props.display_name;
 
     if (props.num_users > 0) {
-      html = html + '</b><br />' + props.num_users + ' spinners';
-      for (var u in props.users) {
-        html = html + '<br />' + props.users[u].name;
+      html = html + '</b><br />' + props.num_users + ' spinner';
+      if (props.num_users > 1){
+        html = html + 's';
       }
     }
   }
   else {
-    html = 'Hover over a state or county';
+    html = 'Click on a state or county';
   }
 
   this._div.innerHTML = (html);

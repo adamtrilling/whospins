@@ -18,7 +18,10 @@
 
 #map { 
   height: 400px; 
-  width: 800px;
+  width: 700px;
+}
+
+#userlist {
 }
 
 /* Lifted shamelessly from twitter bootstrap's docs */

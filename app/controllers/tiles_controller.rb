@@ -33,8 +33,7 @@ class TilesController < ApplicationController
         'fill' => '#CCCCCC'
       }
 
-      font = 'Roboto Light 9'
-      Rails.logger.info("font = #{font}")
+      font = 'Roboto Th, Thin 9'
 
       label_style = {
         'text-field' => 'name',

@@ -25,8 +25,8 @@ class User < ActiveRecord::Base
   end
 
   def update_location_numbers
-    # cache the location numbers.  it saves a TON of time
-    # in generating overlays.
+    # cache the location numbers and percentile.  it saves a 
+    # TON of time in generating overlays.
     User.transaction do 
       connection.execute("
 UPDATE locations SET num_users = num_users + 1 
@@ -34,10 +34,28 @@ UPDATE locations SET num_users = num_users + 1
       connection.execute("
 UPDATE locations SET num_users = num_users - 1 
  WHERE id IN (#{self.old_location_ids.join(',')})")
+
+      # it's theoretically possible to both get and update
+      # the percentiles in one query, but said query is a 
+      # real mess.
+      location_ids.each do |id|
+        percentiles = connection.select_all("
+SELECT id, percent_rank() OVER (ORDER BY num_users) 
+  FROM locations
+ WHERE locations.parents ? '#{id}'
+   AND (num_users > 0)")
+
+        percentiles.each do |p|
+          connection.execute("
+UPDATE locations 
+   SET percentile = #{p['percent_rank']} 
+ WHERE id = #{p['id']}")
+        end
+      end
     end
   end
 
-  def self.set_location_numbers
+  def self.set_location_numbers!
     # cache the location numbers.  it saves a TON of time
     # in generating overlays.
     User.transaction do
@@ -50,6 +68,21 @@ UPDATE locations SET num_users = subquery.num
           FROM locations_users
       GROUP BY location_id) AS subquery
  WHERE locations.id = subquery.location_id")
+
+      Location.where("num_users > 0").pluck(:id).each do |id|
+        percentiles = connection.select_all("
+SELECT id, percent_rank() OVER (ORDER BY num_users) 
+  FROM locations
+ WHERE locations.parents ? '#{id}'
+   AND (num_users > 0)")
+
+        percentiles.each do |p|
+          connection.execute("
+UPDATE locations 
+   SET percentile = #{p['percent_rank']} 
+ WHERE id = #{p['id']}")
+        end
+      end
     end
   end
 end
