@@ -21,6 +21,12 @@ namespace :tile do
       (0..(2**z) - 1).each do |x|
         (0..(2**z) - 1).each do |y|
           puts "generating #{z} (#{x}, #{y})"
+          FileUtils.rm_f(
+            File.join(
+              Whospins::Application.config.action_controller.page_cache_directory, 
+              'tiles', "#{z}", "#{x}", "#{y}.png"
+            )
+          )
           agent.get("http://#{host}/tiles/#{z}/#{x}/#{y}.png")
         end
       end
