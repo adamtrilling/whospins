@@ -33,12 +33,11 @@ class TilesController < ApplicationController
         'fill' => '#CCCCCC'
       }
 
-      font = 'Roboto Th, Thin 9'
+      font = 'Roboto Th, Thin 10'
 
       label_style = {
         'text-field' => 'name',
-        'weight' => '0.5',
-        'text-stroke-color' => '#000000',
+        'color' => '#000000aa',
         'text-outline-color' => '#ffffffcc',
         'text-outline-weight' => '2',
         'font' => font,
