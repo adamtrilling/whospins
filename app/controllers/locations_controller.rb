@@ -28,8 +28,6 @@ id NOT IN (select skeys(parents)::integer FROM locations where id = #{params[:id
       @locations = @locations.where(category: params[:id])
     end
 
-    Rails.logger.info("overlay query: #{@locations.to_sql}")
-
     respond_to do |format|
       format.json do 
         render 'overlay'

@@ -52,19 +52,21 @@ class TilesController < ApplicationController
         end
 
         # states/provinces in supported countries
-        supported_countries_array = "#{supported_countries.to_a.map {|c| "'#{c.id}'"}.join(',')}"
-        l.query buffered_locations.select("name, raw_area").where(
-          "parents ?| ARRAY[#{supported_countries_array}]").where(
-          :category => 'state').to_sql do |q|
-          # thin white border, gray fill
-          style = line_style.merge('stroke' => '#F0F0F0')
+        unless(supported_countries.empty?)
+          supported_countries_array = "#{supported_countries.to_a.map {|c| "'#{c.id}'"}.join(',')}"
+          l.query buffered_locations.select("name, raw_area").where(
+            "parents ?| ARRAY[#{supported_countries_array}]").where(
+            :category => 'state').to_sql do |q|
+            # thin white border, gray fill
+            style = line_style.merge('stroke' => '#F0F0F0')
 
-          if ((4..5).include?(params[:z].to_i))
-            style = style.merge(label_style)
+            if ((4..5).include?(params[:z].to_i))
+              style = style.merge(label_style)
+            end
+
+            q.styles style
+
           end
-
-          q.styles style
-
         end
         l.query supported_countries.select("name, raw_area").to_sql do |q|
           # normal black border, transparent gray fill so we don't cover up the state lines
