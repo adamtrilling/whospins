@@ -27,18 +27,23 @@ class User < ActiveRecord::Base
   def update_location_numbers
     # cache the location numbers and percentile.  it saves a 
     # TON of time in generating overlays.
-    User.transaction do 
-      connection.execute("
+    User.transaction do
+      if (location_ids.size > 0)
+        connection.execute("
 UPDATE locations SET num_users = num_users + 1 
  WHERE id IN (#{location_ids.join(',')})")
-      connection.execute("
+      end
+
+      if (self.old_location_ids && self.old_location_ids.size > 0)
+        connection.execute("
 UPDATE locations SET num_users = num_users - 1 
  WHERE id IN (#{self.old_location_ids.join(',')})")
+      end
 
       # it's theoretically possible to both get and update
       # the percentiles in one query, but said query is a 
       # real mess.
-      location_ids.each do |id|
+      location_ids.concat(self.old_location_ids.nil? ? [] : self.old_location_ids).each do |id|
         percentiles = connection.select_all("
 SELECT id, percent_rank() OVER (ORDER BY num_users) 
   FROM locations
