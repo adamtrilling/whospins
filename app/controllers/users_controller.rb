@@ -1,4 +1,8 @@
 class UsersController < ApplicationController
+  def index
+    render :text => "Number of users: #{User.count}"
+  end
+
   def update
     @user = User.find(params[:id])
 
