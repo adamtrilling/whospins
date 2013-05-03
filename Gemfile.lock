@@ -123,10 +123,6 @@ GEM
     omniauth-oauth (1.0.1)
       oauth
       omniauth (~> 1.0)
-    omniauth-ravelry (0.0.2)
-      multi_json
-      omniauth (~> 1.1.0)
-      omniauth-oauth (~> 1.0.1)
     passenger (4.0.0.rc6)
       daemon_controller (>= 1.1.0)
       rack
@@ -211,7 +207,7 @@ DEPENDENCIES
   jquery-rails
   mechanize
   omniauth
-  omniauth-ravelry
+  omniauth-oauth
   passenger (= 4.0.0.rc6)
   pg
   quiet_assets

@@ -1,3 +1,5 @@
+require 'omniauth_ravelry'
+
 keys = load_yaml('keys')
 
 Rails.application.config.middleware.use OmniAuth::Builder do

@@ -30,7 +30,7 @@ gem 'therubyracer'
 
 # authentication
 gem 'omniauth'
-gem 'omniauth-ravelry'
+gem 'omniauth-oauth'
 
 # other
 gem 'mechanize'
