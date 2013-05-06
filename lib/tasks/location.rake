@@ -55,6 +55,9 @@ namespace :location do
         'processor' => Proc.new { |category, record| 
           next if (record['admin'] == 'Antarctica')
 
+          # TODO this query lops off the part of Alaska that is west of 180W.
+          # update locations set raw_area = ST_Difference(raw_area, st_multi(ST_GeomFromText('POLYGON((180 0, 180 85, 170 85, 170 0, 180 0))', 4326))) WHERE name = 'Alaska'
+
           parent = Location.where("category = 'country' AND props -> 'iso_a2' = '#{record["iso_a2"]}'").first
 
           # check for existing state
