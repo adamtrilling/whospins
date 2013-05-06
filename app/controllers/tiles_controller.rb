@@ -33,7 +33,7 @@ class TilesController < ApplicationController
         'fill' => '#CCCCCC'
       }
 
-      font = 'Roboto Th, Thin 10'
+      font = 'Roboto 10'
 
       label_style = {
         'text-field' => 'name',
