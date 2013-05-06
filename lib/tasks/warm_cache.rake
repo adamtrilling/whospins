@@ -19,7 +19,15 @@ namespace :tile do
               'tiles', "#{z}", "#{x}", "#{y}.png"
             )
           )
-          agent.get("http://#{host}/tiles/#{z}/#{x}/#{y}.png")
+
+          # this sometimes gets 502 errors.  Not sure why.
+          begin
+            agent.get("http://#{host}/tiles/#{z}/#{x}/#{y}.png")
+          rescue Net::HTTPBadGateway
+            puts "\t502 error"
+            sleep 2
+            retry
+          end
         end
       end
     end
