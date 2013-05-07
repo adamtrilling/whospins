@@ -11,7 +11,7 @@ function style(feature) {
     weight: 2,
     opacity: 1,
     color: 'white',
-    dashArray: '3',
+    dashArray: '',
     fillOpacity: 0.7
   };
 }
