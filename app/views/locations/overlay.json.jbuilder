@@ -7,7 +7,7 @@ json.features @locations do |json, loc|
     json.display_name loc.display_name
     json.num_users loc.users.size
     json.percentile loc.percentile
-    json.users loc.users do |json, user|
+    json.users loc.users.sort_by(&:uid) do |json, user|
       json.name user.uid
     end
   end
