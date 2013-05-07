@@ -90,4 +90,8 @@ UPDATE locations
       end
     end
   end
+
+  def sort_name
+    uid.downcase
+  end
 end
