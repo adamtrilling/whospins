@@ -93,7 +93,7 @@ function getOverlay(id) {
 // set up the map
 var map = L.map('map', {
   minZoom: 3,
-  maxZoom: 11,
+  maxZoom: 8,
   maxBounds: [[-90, -180], [90, 180]]
 });
 var tileLayer = L.tileLayer('/tiles/{z}/{x}/{y}.png');
