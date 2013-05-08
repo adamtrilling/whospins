@@ -25,9 +25,9 @@ namespace :location do
     shapefiles = [ 
       {
         'category' => 'country',
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries_lakes.zip',
-        'zipfile' => 'ne_10m_admin_0_countries_lakes.zip',
-        'shapefile' => 'ne_10m_admin_0_countries_lakes.shp',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_10m_admin_0_countries_lakes.zip',
+        'zipfile' => 'ne_50m_admin_0_countries_lakes.zip',
+        'shapefile' => 'ne_50m_admin_0_countries_lakes.shp',
         'srid' => '4326',
         'geom_field' => 'raw_area',
         'processor' => Proc.new { |category, record|
