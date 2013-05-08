@@ -25,11 +25,33 @@ namespace :location do
     shapefiles = [ 
       {
         'category' => 'country',
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries_lakes.zip',
-        'zipfile' => 'ne_50m_admin_0_countries_lakes.zip',
-        'shapefile' => 'ne_50m_admin_0_countries_lakes.shp',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries_lakes.zip',
+        'zipfile' => 'ne_10m_admin_0_countries_lakes.zip',
+        'shapefile' => 'ne_10m_admin_0_countries_lakes.shp',
         'srid' => '4326',
-        # 'tolerance' => '1100',
+        'geom_field' => 'raw_area',
+        'processor' => Proc.new { |category, record|
+          # skip Antarctica - PostGIS doesn't know how to reproject it
+          next if (record["name"] == 'Antarctica')
+
+          # check whether the country already exists
+          [Location.where(
+            :category => 'country').where(
+            ["lower(name) = ?", record["name"].downcase]).first ||
+           Location.create!(
+            :name => record["name"],
+            :category => category,
+            :props => { 'iso_a2' => record["iso_a2"] },
+            :parents => {})]
+        }
+      },
+      {
+        'category' => 'country',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_50m_admin_0_countries_lakes.zip',
+        'zipfile' => 'ne_110m_admin_0_countries_lakes.zip',
+        'shapefile' => 'ne_110m_admin_0_countries_lakes.shp',
+        'srid' => '4326',
+        'geom_field' => 'area',
         'processor' => Proc.new { |category, record|
           # skip Antarctica - PostGIS doesn't know how to reproject it
           next if (record["name"] == 'Antarctica')
@@ -47,16 +69,63 @@ namespace :location do
       },
       {
         'category' => 'state',
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_1_states_provinces_lakes_shp.zip',
-        'zipfile' => 'ne_10m_admin_1_states_provinces_lakes_shp.zip',
-        'shapefile' => 'ne_10m_admin_1_states_provinces_lakes_shp.shp',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_1_states_provinces_lakes_shp.zip',
+        'zipfile' => 'ne_50m_admin_1_states_provinces_lakes_shp.zip',
+        'shapefile' => 'ne_50m_admin_1_states_provinces_lakes_shp.shp',
         'srid' => '4326',
-        'tolerance' => '1100',
+        'geom_field' => 'raw_area',
         'processor' => Proc.new { |category, record| 
           next if (record['admin'] == 'Antarctica')
 
           # TODO this query lops off the part of Alaska that is west of 180W.
-          # update locations set raw_area = ST_Difference(raw_area, st_multi(ST_GeomFromText('POLYGON((180 0, 180 85, 170 85, 170 0, 180 0))', 4326))) WHERE name = 'Alaska'
+          # update locations set raw_area = ST_Difference(raw_area, st_multi(ST_GeomFromText('POLYGON((178 0, 178 85, 170 85, 170 0, 178 0))', 4326))) WHERE name = 'Alaska'
+
+          parent = Location.where("category = 'country' AND props -> 'iso_a2' = '#{record["iso_a2"]}'").first
+
+          # check for existing state
+          location = Location.where(
+            :category => 'state').where(
+            :name => record["name"])
+
+          if (parent)
+            location = location.where(["exist(parents, ?::text)", parent.id])
+          end
+
+          if (location.first.nil?) 
+            # only the US uses code_local, from which the FIPS code can be parsed.
+            # non-US FIPS codes will be retrieved from geonames later.
+            uids = { 'postal' => record['postal'] }
+            if (record['iso_a2'] == 'US')
+              uids['fips'] = record["code_local"][2..3]
+
+              # this file has the wrong FIPS code for MN
+              if (uids['postal'] == "MN")
+                uids['fips'] = '27'
+              end
+            end
+
+            [Location.create!(
+              :name => record["name"],
+              :category => category,
+              :props => uids,
+              :parents => parent.nil? ? {} : {parent.id => 'in'})]
+          else
+            [location.first]
+          end
+        }
+      },
+      {
+        'category' => 'state',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_10m_admin_1_states_provinces_lakes_shp.zip',
+        'zipfile' => 'ne_110m_admin_1_states_provinces_lakes_shp.zip',
+        'shapefile' => 'ne_110m_admin_1_states_provinces_lakes_shp.shp',
+        'srid' => '4326',
+        'geom_field' => 'area',
+        'processor' => Proc.new { |category, record| 
+          next if (record['admin'] == 'Antarctica')
+
+          # TODO this query lops off the part of Alaska that is west of 180W.
+          # update locations set raw_area = ST_Difference(raw_area, st_multi(ST_GeomFromText('POLYGON((178 0, 178 85, 170 85, 170 0, 178 0))', 4326))) WHERE name = 'Alaska'
 
           parent = Location.where("category = 'country' AND props -> 'iso_a2' = '#{record["iso_a2"]}'").first
 
@@ -98,7 +167,7 @@ namespace :location do
         'zipfile' => 'tl_2012_us_county.zip',
         'shapefile' => 'tl_2012_us_county.shp',
         'srid' => '4269',
-        'tolerance' => '2000',
+        'tolerance' => '4000',
         'processor' => Proc.new {|category, record|
           # i hate encoding
           name = record["NAME"].force_encoding('ISO-8859-1').encode('UTF-8')
@@ -154,20 +223,19 @@ namespace :location do
           unless (locations.nil?)
             locations.each do |loc|
 
-              if (attrs['debug'])
-                puts "record geometry type = #{record.geometry.class.to_s}"
-                puts "raw sql = UPDATE locations SET raw_area = ST_Transform(ST_GeomFromText('#{record.geometry.as_text}', #{attrs['srid']}), #{DB_SRID}) WHERE id = #{loc.id}"
-              end
-
-              loc.connection.update_sql("UPDATE locations SET raw_area = ST_Transform(ST_GeomFromText('#{record.geometry.as_text}', #{attrs['srid']}), #{DB_SRID}) WHERE id = #{loc.id}")
-
-              if (attrs['tolerance'])
-                # transform to Web Mercator before simplifying, because simplifying 
-                # lat/lon geometries causes weird things to happen.  like the state 
-                # of Michigan disappearing.
-                loc.connection.update_sql("UPDATE locations SET area = ST_Transform(ST_Simplify(ST_Transform(raw_area, 900913), #{attrs['tolerance']}), #{DB_SRID}) WHERE id = #{loc.id}")
+              if (attrs['geom_field'])
+                loc.connection.update_sql("UPDATE locations SET #{attrs['geom_field']} = ST_Transform(ST_GeomFromText('#{record.geometry.as_text}', #{attrs['srid']}), #{DB_SRID}) WHERE id = #{loc.id}")
               else
-                loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
+                loc.connection.update_sql("UPDATE locations SET raw_area = ST_Transform(ST_GeomFromText('#{record.geometry.as_text}', #{attrs['srid']}), #{DB_SRID}) WHERE id = #{loc.id}")
+
+                if (attrs['tolerance'])
+                  # transform to Web Mercator before simplifying, because simplifying 
+                  # lat/lon geometries causes weird things to happen.  like the state 
+                  # of Michigan disappearing.
+                  loc.connection.update_sql("UPDATE locations SET area = ST_Transform(ST_Simplify(ST_Transform(raw_area, 900913), #{attrs['tolerance']}), #{DB_SRID}) WHERE id = #{loc.id}")
+                else
+                  loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
+                end
               end
             end
           end
