@@ -55,7 +55,8 @@ function zoomToFeature(e) {
   // if the feature was a country or a state, load 
   // the overlay for the feature
   if (props.category == 'country' || props.category == 'state') {
-    getOverlay(e.target.feature.id);
+    overlayID = e.target.feature.id;
+    getOverlay();
   }
 }
 
@@ -67,7 +68,7 @@ function onEachFeature(feature, layer) {
   });
 }
 
-function getOverlay(id) {
+function getOverlay() {
   // remove the existing layer, if any
   if (geojsonLayer && map.hasLayer(geojsonLayer)) {
     map.removeLayer(geojsonLayer);
@@ -76,7 +77,7 @@ function getOverlay(id) {
   // grab the geojson layer
   $.ajax({
     type: "GET",
-    url: "/locations/overlay/" + id + ".json",
+    url: "/locations/overlay/" + overlayID + ".json",
     dataType: 'json',
     async: false,
     success: function(response) {
@@ -100,8 +101,9 @@ var tileLayer = L.tileLayer('/tiles/{z}/{x}/{y}.png');
 map.addLayer(tileLayer).setView(new L.LatLng(38, -95), 3);
 
 var geojsonLayer = null;
+var overlayID = 'state';
 
-getOverlay('state');
+getOverlay();
 
 // info box
 var info = L.control();

@@ -105,7 +105,6 @@ $('#location-form').submit(function(event) {
     if (result['status'] == "OK") {
       button.addClass('btn-success');
       getOverlay();
-      refreshOverlay();
     }
     else {
       button.addClass('btn-danger');
