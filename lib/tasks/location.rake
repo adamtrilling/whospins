@@ -25,7 +25,7 @@ namespace :location do
     shapefiles = [ 
       {
         'category' => 'country',
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_10m_admin_0_countries_lakes.zip',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries_lakes.zip',
         'zipfile' => 'ne_50m_admin_0_countries_lakes.zip',
         'shapefile' => 'ne_50m_admin_0_countries_lakes.shp',
         'srid' => '4326',
@@ -47,7 +47,7 @@ namespace :location do
       },
       {
         'category' => 'country',
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_50m_admin_0_countries_lakes.zip',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries_lakes.zip',
         'zipfile' => 'ne_110m_admin_0_countries_lakes.zip',
         'shapefile' => 'ne_110m_admin_0_countries_lakes.shp',
         'srid' => '4326',
@@ -69,7 +69,7 @@ namespace :location do
       },
       {
         'category' => 'state',
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_50m_admin_1_states_provinces_lakes_shp.zip',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_1_states_provinces_lakes_shp.zip',
         'zipfile' => 'ne_10m_admin_1_states_provinces_lakes_shp.zip',
         'shapefile' => 'ne_10m_admin_1_states_provinces_lakes_shp.shp',
         'srid' => '4326',
@@ -116,7 +116,7 @@ namespace :location do
       },
       {
         'category' => 'state',
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_10m_admin_1_states_provinces_lakes_shp.zip',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_1_states_provinces_lakes_shp.zip',
         'zipfile' => 'ne_50m_admin_1_states_provinces_lakes_shp.zip',
         'shapefile' => 'ne_50m_admin_1_states_provinces_lakes_shp.shp',
         'srid' => '4326',
