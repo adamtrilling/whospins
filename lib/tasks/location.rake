@@ -69,9 +69,9 @@ namespace :location do
       },
       {
         'category' => 'state',
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_1_states_provinces_lakes_shp.zip',
-        'zipfile' => 'ne_50m_admin_1_states_provinces_lakes_shp.zip',
-        'shapefile' => 'ne_50m_admin_1_states_provinces_lakes_shp.shp',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_50m_admin_1_states_provinces_lakes_shp.zip',
+        'zipfile' => 'ne_10m_admin_1_states_provinces_lakes_shp.zip',
+        'shapefile' => 'ne_10m_admin_1_states_provinces_lakes_shp.shp',
         'srid' => '4326',
         'geom_field' => 'raw_area',
         'processor' => Proc.new { |category, record| 
@@ -116,9 +116,9 @@ namespace :location do
       },
       {
         'category' => 'state',
-        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_10m_admin_1_states_provinces_lakes_shp.zip',
-        'zipfile' => 'ne_110m_admin_1_states_provinces_lakes_shp.zip',
-        'shapefile' => 'ne_110m_admin_1_states_provinces_lakes_shp.shp',
+        'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_10m_admin_1_states_provinces_lakes_shp.zip',
+        'zipfile' => 'ne_50m_admin_1_states_provinces_lakes_shp.zip',
+        'shapefile' => 'ne_50m_admin_1_states_provinces_lakes_shp.shp',
         'srid' => '4326',
         'geom_field' => 'area',
         'processor' => Proc.new { |category, record| 
