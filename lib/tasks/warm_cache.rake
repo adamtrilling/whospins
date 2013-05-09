@@ -9,7 +9,7 @@ namespace :tile do
 
     agent = Mechanize.new
 
-    (3..11).each do |z|
+    (3..8).each do |z|
       (0..(2**z) - 1).each do |x|
         (0..(2**z) - 1).each do |y|
           puts "generating #{z} (#{x}, #{y})"
