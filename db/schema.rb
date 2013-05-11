@@ -22,8 +22,10 @@ ActiveRecord::Schema.define(version: 20130510021237) do
     t.integer "user_id"
     t.string  "provider"
     t.string  "uid"
+    t.hstore  "info"
   end
 
+  add_index "authorizations", ["info"], :name => "authorizations_info_index"
   add_index "authorizations", ["provider"], :name => "index_authorizations_on_provider"
   add_index "authorizations", ["uid"], :name => "index_authorizations_on_uid"
   add_index "authorizations", ["user_id"], :name => "index_authorizations_on_user_id"

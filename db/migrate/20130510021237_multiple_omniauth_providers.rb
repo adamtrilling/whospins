@@ -4,11 +4,13 @@ class MultipleOmniauthProviders < ActiveRecord::Migration
       t.references :user
       t.string :provider
       t.string :uid
+      t.hstore :info
     end
 
     add_index :authorizations, :user_id
     add_index :authorizations, :provider
     add_index :authorizations, :uid
+    execute "CREATE INDEX authorizations_info_index ON authorizations USING gin(info)"
 
     # move info over from the users table
     User.all.each do |u|

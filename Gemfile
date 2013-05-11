@@ -31,6 +31,7 @@ gem 'therubyracer'
 # authentication
 gem 'omniauth'
 gem 'omniauth-oauth'
+gem "omniauth-google-oauth2"
 
 # other
 gem 'mechanize'
