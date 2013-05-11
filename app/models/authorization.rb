@@ -11,4 +11,9 @@ class Authorization < ActiveRecord::Base
   def self.create_with_omniauth(auth)
     create(uid: auth['uid'], provider: auth['provider'])
   end
+
+  # name varies by auth provider
+  def name
+    uid
+  end
 end

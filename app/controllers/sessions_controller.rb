@@ -25,6 +25,10 @@ class SessionsController < ApplicationController
           redirect_to root_url, notice: "Added #{auth['provider']} account"
         end
       else
+        unless (@auth.user)
+          @auth.user.create(name: @auth.name)
+        end
+
         session[:user_id] = @auth.user
         redirect_to root_url, :notice => 'Signed in!'
       end
