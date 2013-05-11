@@ -4,9 +4,9 @@
 %ul.nav.pull-right
   - if user_signed_in?
     %li
-      = link_to current_user.uid, "http://www.ravelry.com/people/#{current_user.uid}"
+      = link_to current_user.name, "http://www.ravelry.com/people/#{current_user.name}"
     %li
-      = link_to 'Logout', signout_path
+      = link_to 'Logout', logout_path
   - else
     %li
-      = link_to 'Login Through Ravelry', signin_path
+      = link_to 'Login Through Ravelry', login_path(provider: 'ravelry')

@@ -6,9 +6,9 @@ Whospins::Application.routes.draw do
   resources :users, :only => [:index, :show, :edit, :update ]
 
   get '/auth/:provider/callback' => 'sessions#create'
-  get '/signin' => 'sessions#new', :as => :signin
-  get '/signout' => 'sessions#destroy', :as => :signout
   get '/auth/failure' => 'sessions#failure'
+  get '/auth/:provider' => 'sessions#new', :as => :login
+  get '/logout' => 'sessions#destroy', :as => :logout
 
   get '/tiles/:z/:x/:y.png' => 'tiles#show'
 

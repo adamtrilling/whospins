@@ -1,7 +1,7 @@
 #instructions.label-box
   %p 
     Colored areas of the map show where there are spinners.  Hovering over these areas will list their Ravelry names.  If you 
-    = link_to 'Log in through Ravelry', signin_path
+    = link_to 'Log in through Ravelry', login_path(provider: 'ravelry')
     , you can add your location by selecting it from the box below the map and clicking "Save".
   %p 
     Currently, only the United States and most of Canada are supported.  Other countries will be added in the near future.  If you live in a small town, it might not appear on the list, so select the nearest town that does appear.  

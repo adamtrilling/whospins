@@ -11,12 +11,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20130427194559) do
+ActiveRecord::Schema.define(version: 20130510021237) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
   enable_extension "hstore"
+
+  create_table "authorizations", force: true do |t|
+    t.integer "user_id"
+    t.string  "provider"
+    t.string  "uid"
+  end
+
+  add_index "authorizations", ["provider"], :name => "index_authorizations_on_provider"
+  add_index "authorizations", ["uid"], :name => "index_authorizations_on_uid"
+  add_index "authorizations", ["user_id"], :name => "index_authorizations_on_user_id"
 
   create_table "locations", force: true do |t|
     t.string  "name"
@@ -50,8 +60,6 @@ ActiveRecord::Schema.define(version: 20130427194559) do
   add_index "locations_users", ["user_id"], :name => "index_locations_users_on_user_id"
 
   create_table "users", force: true do |t|
-    t.string   "provider"
-    t.string   "uid"
     t.string   "name"
     t.hstore   "location_names"
     t.datetime "created_at"

@@ -1,17 +1,14 @@
 class User < ActiveRecord::Base
   attr_accessor :old_location_ids
 
+  has_many :authorizations
   has_and_belongs_to_many :locations
 
   before_save :set_location_names
   after_save :update_location_numbers
 
   def self.create_with_omniauth(auth)
-    create! do |user|
-      user.provider = auth["provider"]
-      user.uid = auth["uid"]
-      user.name = auth["info"]["name"]
-    end
+    create(name: auth['name'])
   end
 
   def set_location_names
@@ -92,6 +89,6 @@ UPDATE locations
   end
 
   def sort_name
-    uid.downcase
+    name.downcase
   end
 end
