@@ -62,7 +62,6 @@ ActiveRecord::Schema.define(version: 20130510021237) do
   add_index "locations_users", ["user_id"], :name => "index_locations_users_on_user_id"
 
   create_table "users", force: true do |t|
-    t.string   "name"
     t.hstore   "location_names"
     t.datetime "created_at"
     t.datetime "updated_at"

@@ -18,19 +18,40 @@ class SessionsController < ApplicationController
         if (@auth.user == current_user)
           # if user is trying to add an identity that is already added
           redirect_to root_url, notice: 'That account is already linked!'
-        elsif (@auth.user.nil?)
-          # add the identity to an existing user
-          @auth.user = current_user
-          @auth.save
-          redirect_to root_url, notice: "Added #{auth['provider']} account"
         else
-          # if the auth belongs to a user other than the logged-in user,
-          # log in as that user and destroy the current user
-          current_user.authorizations.each do |a|
-            a.update_attributes(user_id: @auth.user.id)
+          if (@auth.user.nil?)
+            # add the identity to an existing user
+            @auth.user = current_user
+            @auth.save
+          else
+            # if the auth belongs to a user other than the logged-in user,
+            # log in as that user and destroy the current user
+            current_user.authorizations.each do |a|
+              a.update_attributes(user_id: @auth.user.id)
+            end
+            current_user.destroy
+            session[:user_id] = @auth.user.id
           end
-          current_user.destroy
-          session[:user_id] = @auth.user.id
+
+          # expire any affected overlays.  since this action doesn't
+          # change location user counts, we can just expire the overlays
+          # that the user actually appears in.
+          current_user.locations.each do |l|
+            Rails.logger.info("Expiring overlay #{l.id}")
+            FileUtils.rm_f(
+              File.join(
+                Whospins::Application.config.action_controller.page_cache_directory, 
+                'locations', 'overlay', "#{l.id}.json"
+              )
+            )
+            Rails.logger.info("Expiring states overlay")
+            FileUtils.rm_f(
+              File.join(
+                Whospins::Application.config.action_controller.page_cache_directory, 
+                'locations', 'overlay', "state.json"
+              )
+            )
+          end
 
           redirect_to root_url, notice: "Added #{auth['provider']} account"
         end

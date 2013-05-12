@@ -7,7 +7,7 @@ class LocationsController < ApplicationController
     # out something smarter
     expires_now
 
-    @locations = Location.where("num_users > 0").includes(:users)
+    @locations = Location.where("num_users > 0").includes(:users => :authorizations)
 
     if (params[:id].to_i > 0)
       # you can't use ? operators with bind parameters.  but we've already

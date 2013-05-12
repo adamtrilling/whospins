@@ -18,12 +18,14 @@ class MultipleOmniauthProviders < ActiveRecord::Migration
         user_id: u.id,
         provider: u.provider,
         uid: u.uid,
-        info: {'name' => u.uid}
+        info: {
+          'name' => u.uid,
+          'profile_url' => "http://www.ravelry.com/people/#{u.uid}"
+        }
       )
-
-      u.update_attributes(name: u.uid)
     end
 
+    remove_column :users, :name
     remove_column :users, :provider
     remove_column :users, :uid
   end

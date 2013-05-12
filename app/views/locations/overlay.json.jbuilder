@@ -9,6 +9,10 @@ json.features @locations do |json, loc|
     json.percentile loc.percentile
     json.users loc.users.sort_by(&:sort_name) do |json, user|
       json.name user.name
+      json.profiles user.authorizations.sort_by(&:provider) do |json, auth|
+        json.provider auth.provider
+        json.profile_url auth.profile_url
+      end
     end
   end
   json.geometry do |json|

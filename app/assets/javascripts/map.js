@@ -46,9 +46,15 @@ function zoomToFeature(e) {
 
   html = "<b>" + props.display_name + "</b><br/>"
   for (var u in props.users) {
-    html = html + '<br /><img src="/assets/rav_link.gif"/>';
-    html = html + '<a href="http://www.ravelry.com/people/' + props.users[u].name + '">';
-    html = html + props.users[u].name + '</a>';
+    html = html + '<br />';
+    for (var p in props.users[u].profiles) {
+      var profile = props.users[u].profiles[p];
+      html = html + '<a href="' + profile.profile_url + '">';
+      html = html + '<img src="/assets/' + profile.provider + '_24.png"/>';
+      html = html + '</a>';
+    }
+    
+    html = html + props.users[u].name;
   }
   $('#userlist').html(html);
 

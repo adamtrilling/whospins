@@ -88,6 +88,18 @@ UPDATE locations
     end
   end
 
+  def name
+    # Facebook and Google both provide real names, so use them first
+    authorizations.each do |auth|
+      if (['google_oauth2', 'facebook'].include?(auth.provider))
+        return auth.info["name"]
+      end
+    end
+
+    # if we only have ravelry, use the name from there
+    return authorizations.first.info["name"]
+  end
+
   def sort_name
     name.downcase
   end

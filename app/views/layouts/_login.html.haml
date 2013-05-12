@@ -4,13 +4,13 @@
     %h3#loginLabel Log In
   .modal-body
     %p If you have an account on any of the sites listed below, you can use it to log in to Who Spins.  Users may contact you through any account you use to log in to Who Spins.  You may log in using more than one account, but you only need one in order to use Who Spins.
-    - ['ravelry', 'google', 'facebook'].each do |provider|
+    - ['ravelry', 'google_oauth2', 'facebook'].each do |provider|
       %p
-        -if (current_user && auth = current_user.authorizations.find_by_provider(Authorization.provider_names[provider]))
+        -if (current_user && auth = current_user.authorizations.find_by_provider(provider))
           =image_tag("#{provider}_32.png")
           Logged in as 
           =link_to auth.name, auth.profile_url
         -else 
-          =link_to image_tag("#{provider}_32.png"), login_path(provider: Authorization.provider_names[provider])
+          =link_to image_tag("#{provider}_32.png"), login_path(provider: provider)
           Log in through 
-          =link_to provider.capitalize, login_path(provider: Authorization.provider_names[provider])
+          =link_to provider.capitalize.gsub(/_.*$/, ''), login_path(provider: provider)

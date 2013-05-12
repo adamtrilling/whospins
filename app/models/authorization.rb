@@ -12,30 +12,31 @@ class Authorization < ActiveRecord::Base
     info = {}
     case auth['provider']
     when 'ravelry'
-      info = {'name' => auth['uid']}
+      info = {
+        'name' => auth['uid'],
+        'profile_url' => "http://www.ravelry.com/people/#{auth['uid']}"
+      }
     when 'google_oauth2'
-      info = auth[:info]
+      info = {
+        'name' => auth['info']['name'],
+        'profile_url' => auth['info']['urls']['Google']
+      }
     when 'facebook'
-      info = auth[:info]
+      info = {
+        'name' => auth['info']['name'],
+        'profile_url' => auth['info']['urls']['Facebook']
+      }
     end
 
     create(uid: auth['uid'], provider: auth['provider'], info: info)
   end
 
-  # provider-dependent attributes
-  def self.provider_names
-    {
-      'ravelry' => 'ravelry',
-      'google' => 'google_oauth2',
-      'facebook' => 'facebook'
-    }
-  end
-
+  # (possibly) provider-dependent attributes
   def name
     info['name']
   end
 
   def profile_url
-    'http://placeholder'
+    info['profile_url']
   end
 end
