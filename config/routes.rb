@@ -1,6 +1,7 @@
 Whospins::Application.routes.draw do
-  get "pages/index"
   root :to => 'pages#index'
+  get "pages/index"
+  get "pages/:page" => 'pages#show', :as => :page
 
   get '/users/current.:format' => 'users#current'
   resources :users, :only => [:index, :show, :edit, :update ]
