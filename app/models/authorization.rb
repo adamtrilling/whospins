@@ -15,6 +15,8 @@ class Authorization < ActiveRecord::Base
       info = {'name' => auth['uid']}
     when 'google_oauth2'
       info = auth[:info]
+    when 'facebook'
+      info = auth[:info]
     end
 
     create(uid: auth['uid'], provider: auth['provider'], info: info)

@@ -30,8 +30,9 @@ gem 'therubyracer'
 
 # authentication
 gem 'omniauth'
+gem 'omniauth-facebook'
+gem 'omniauth-google-oauth2'
 gem 'omniauth-oauth'
-gem "omniauth-google-oauth2"
 
 # other
 gem 'mechanize'
