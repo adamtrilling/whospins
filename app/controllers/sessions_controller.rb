@@ -18,10 +18,20 @@ class SessionsController < ApplicationController
         if (@auth.user == current_user)
           # if user is trying to add an identity that is already added
           redirect_to root_url, notice: 'That account is already linked!'
-        else
+        elsif (@auth.user.nil?)
           # add the identity to an existing user
           @auth.user = current_user
           @auth.save
+          redirect_to root_url, notice: "Added #{auth['provider']} account"
+        else
+          # if the auth belongs to a user other than the logged-in user,
+          # log in as that user and destroy the current user
+          current_user.authorizations.each do |a|
+            a.update_attributes(user_id: @auth.user.id)
+          end
+          current_user.destroy
+          session[:user_id] = @auth.user.id
+
           redirect_to root_url, notice: "Added #{auth['provider']} account"
         end
       else
