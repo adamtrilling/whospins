@@ -17,7 +17,8 @@ class MultipleOmniauthProviders < ActiveRecord::Migration
       Authorization.create(
         user_id: u.id,
         provider: u.provider,
-        uid: u.uid
+        uid: u.uid,
+        info: {'name' => u.uid}
       )
 
       u.update_attributes(name: u.uid)

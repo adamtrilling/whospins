@@ -9,11 +9,31 @@ class Authorization < ActiveRecord::Base
   end
 
   def self.create_with_omniauth(auth)
-    create(uid: auth['uid'], provider: auth['provider'])
+    info = {}
+    case auth['provider']
+    when 'ravelry'
+      info = {'name' => auth['uid']}
+    when 'google_oauth2'
+      info = auth[:info]
+    end
+
+    create(uid: auth['uid'], provider: auth['provider'], info: info)
   end
 
-  # name varies by auth provider
+  # provider-dependent attributes
+  def self.provider_names
+    {
+      'ravelry' => 'ravelry',
+      'google' => 'google_oauth2',
+      'facebook' => 'facebook'
+    }
+  end
+
   def name
-    uid
+    info['name']
+  end
+
+  def profile_url
+    'http://placeholder'
   end
 end

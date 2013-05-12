@@ -26,10 +26,12 @@ class SessionsController < ApplicationController
         end
       else
         unless (@auth.user)
-          @auth.user.create(name: @auth.name)
+          @auth.user = User.create(name: @auth.name)
+          # @auth failed validation before because there was no user
+          @auth.save
         end
 
-        session[:user_id] = @auth.user
+        session[:user_id] = @auth.user.id
         redirect_to root_url, :notice => 'Signed in!'
       end
     rescue Exception => e

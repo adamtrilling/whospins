@@ -4,9 +4,11 @@
 %ul.nav.pull-right
   - if user_signed_in?
     %li
-      = link_to current_user.name, "http://www.ravelry.com/people/#{current_user.name}"
+      %a{'href' => '#loginModal', 'data-toggle' => 'modal'} Add Accounts
     %li
-      = link_to 'Logout', logout_path
+      = link_to 'Log Out', logout_path
   - else
     %li
-      = link_to 'Login Through Ravelry', login_path(provider: 'ravelry')
+      %a{'href' => '#loginModal', 'data-toggle' => 'modal'} Log In
+
+=render partial: 'layouts/login'
