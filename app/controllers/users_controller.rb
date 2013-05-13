@@ -11,6 +11,10 @@ class UsersController < ApplicationController
     @users = User.all.includes(:authorizations, :locations)
   end
 
+  def count
+    render :text => "Number of users: #{User.all.count}"
+  end
+
   def update
     @user = User.find(params[:id])
 
