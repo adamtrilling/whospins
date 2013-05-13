@@ -89,14 +89,13 @@ UPDATE locations
   end
 
   def name
-    # Facebook and Google both provide real names, so use them first
+    # Facebook and Google both provide real names, so use ravelry if possible
     authorizations.each do |auth|
-      if (['google_oauth2', 'facebook'].include?(auth.provider))
+      if (auth.provider == 'ravelry')
         return auth.info["name"]
       end
     end
 
-    # if we only have ravelry, use the name from there
     return authorizations.first.info["name"]
   end
 

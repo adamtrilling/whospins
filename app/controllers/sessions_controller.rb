@@ -57,7 +57,7 @@ class SessionsController < ApplicationController
         end
       else
         unless (@auth.user)
-          @auth.user = User.create(name: @auth.name)
+          @auth.user = User.create
           # @auth failed validation before because there was no user
           @auth.save
         end
