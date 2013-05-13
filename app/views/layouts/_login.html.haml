@@ -4,6 +4,9 @@
     %h3#loginLabel Log In
   .modal-body
     %p If you have an account on any of the sites listed below, you can use it to log in to Who Spins.  Users may contact you through any account you use to log in to Who Spins.  You may log in using more than one account, but you only need one in order to use Who Spins.
+    %p
+      %b Note:
+      Logging in with Google or Facebook will cause your real name to be shown on the list of users for your location.
     - ['ravelry', 'google_oauth2', 'facebook'].each do |provider|
       %p
         -if (current_user && auth = current_user.authorizations.find_by_provider(provider))
