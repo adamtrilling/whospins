@@ -5,6 +5,7 @@
 %table.table.table-striped.table-bordered
   %tr
     %th Id
+    %th Join Date
     %th Ravelry
     %th Facebook
     %th Google
@@ -15,6 +16,7 @@
   - @users.each do |u|
     %tr
       %td= u.id
+      %td= u.created_at.strftime('%B %-d, %Y')
       %td= u.authorizations.select {|a| a.provider == 'ravelry'}.first.name rescue ''
       %td= u.authorizations.select {|a| a.provider == 'facebook'}.first.name rescue ''
       %td= u.authorizations.select {|a| a.provider == 'google_oauth2'}.first.name rescue ''
