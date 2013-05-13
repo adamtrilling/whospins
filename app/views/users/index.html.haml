@@ -1,0 +1,24 @@
+%h3
+  Number of users: 
+  =@users.count
+
+%table.table.table-striped.table-bordered
+  %tr
+    %th Id
+    %th Ravelry
+    %th Facebook
+    %th Google
+    %th Country
+    %th Admin1 (State)
+    %th Admin2 (County)
+    %th City
+  - @users.each do |u|
+    %tr
+      %td= u.id
+      %td= u.authorizations.select {|a| a.provider == 'ravelry'}.first.name rescue ''
+      %td= u.authorizations.select {|a| a.provider == 'facebook'}.first.name rescue ''
+      %td= u.authorizations.select {|a| a.provider == 'google_oauth2'}.first.name rescue ''
+      %td= u.locations.select {|l| l.category == 'country'}.first.name rescue ''
+      %td= u.locations.select {|l| l.category == 'state'}.first.name rescue ''
+      %td= u.locations.select {|l| l.category == 'county'}.first.name rescue ''
+      %td= u.locations.select {|l| l.category == 'city'}.first.name rescue ''

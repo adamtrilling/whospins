@@ -1,6 +1,14 @@
 class UsersController < ApplicationController
+  # this is a debug page for special people
   def index
-    render :text => "Number of users: #{User.count}"
+    Rails.logger.info("")
+    unless (current_user && 
+            current_user.authorizations.where(provider: 'ravelry').first &&
+            ['BobbyTables', 'breyerchic04'].include?(current_user.authorizations.where(provider: 'ravelry').first.uid))
+      redirect_to root_url
+    end
+
+    @users = User.all.includes(:authorizations, :locations)
   end
 
   def update
