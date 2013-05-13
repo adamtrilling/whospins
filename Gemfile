@@ -41,6 +41,7 @@ gem 'mechanize'
 gem 'quiet_assets'
 
 group :development do
+  gem 'active_record_query_trace'
   gem 'better_errors'
   gem 'binding_of_caller'  
 
