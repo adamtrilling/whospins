@@ -18,6 +18,8 @@
 }
 
 #userlist {
+  height: 400px;
+  overflow-y: scroll;
 }
 
 /* Lifted shamelessly from twitter bootstrap's docs */
