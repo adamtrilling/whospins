@@ -36,6 +36,7 @@ gem 'omniauth-oauth'
 
 # other
 gem 'mechanize'
+gem 'will_paginate'
 
 # debugging
 gem 'quiet_assets'

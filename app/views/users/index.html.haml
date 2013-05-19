@@ -1,6 +1,6 @@
 %h3
   Number of users: 
-  =@users.count
+  =@user_count
 
 %table.table.table-striped.table-bordered
   %tr
@@ -24,3 +24,5 @@
       %td= u.locations.select {|l| l.category == 'state'}.first.name rescue ''
       %td= u.locations.select {|l| l.category == 'county'}.first.name rescue ''
       %td= u.locations.select {|l| l.category == 'city'}.first.name rescue ''
+
+%p= will_paginate @users

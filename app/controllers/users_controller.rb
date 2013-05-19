@@ -1,14 +1,17 @@
 class UsersController < ApplicationController
   # this is a debug page for special people
   def index
-    Rails.logger.info("")
     unless (current_user && 
             current_user.authorizations.where(provider: 'ravelry').first &&
             ['BobbyTables', 'breyerchic04'].include?(current_user.authorizations.where(provider: 'ravelry').first.uid))
       redirect_to root_url
     end
 
-    @users = User.all.includes(:authorizations, :locations)
+    page = params[:page] || 0
+
+    @user_count = User.count
+
+    @users = User.paginate(:page => params[:page], :per_page => 50).order('id DESC')
   end
 
   def count

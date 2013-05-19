@@ -4,7 +4,7 @@ Whospins::Application.routes.draw do
   get "pages/:page" => 'pages#show', :as => :page
 
   get '/users/current.:format' => 'users#current'
-  resources :users, :only => [:edit, :update ]
+  resources :users, :only => [:index, :edit, :update ]
   get '/users/count' => 'users#count'
 
   get '/auth/:provider/callback' => 'sessions#create'

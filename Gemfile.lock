@@ -211,6 +211,7 @@ GEM
       unf_ext
     unf_ext (0.0.6)
     webrobots (0.1.1)
+    will_paginate (3.0.4)
 
 PLATFORMS
   ruby
@@ -241,3 +242,4 @@ DEPENDENCIES
   simpler-tiles!
   therubyracer
   uglifier (>= 1.0.3)
+  will_paginate
