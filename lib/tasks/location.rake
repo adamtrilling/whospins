@@ -232,7 +232,7 @@ namespace :location do
                   # transform to Web Mercator before simplifying, because simplifying 
                   # lat/lon geometries causes weird things to happen.  like the state 
                   # of Michigan disappearing.
-                  loc.connection.update_sql("UPDATE locations SET area = ST_Transform(ST_Simplify(ST_Transform(raw_area, 900913), #{attrs['tolerance']}), #{DB_SRID}) WHERE id = #{loc.id}")
+                  loc.connection.update_sql("UPDATE locations SET area = ST_Transform(ST_SimplifyPreserveTopology(ST_Transform(raw_area, 900913), #{attrs['tolerance']}), #{DB_SRID}) WHERE id = #{loc.id}")
                 else
                   loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
                 end
