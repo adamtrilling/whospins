@@ -49,7 +49,7 @@ function zoomToFeature(e) {
     html = html + '<br />';
     for (var p in props.users[u].profiles) {
       var profile = props.users[u].profiles[p];
-      html = html + '<a href="' + profile.profile_url + '">';
+      html = html + '<a href="' + profile.profile_url + '" target="_blank">';
       html = html + '<img src="/assets/' + profile.provider + '_24.png"/>';
       html = html + '</a>';
     }
