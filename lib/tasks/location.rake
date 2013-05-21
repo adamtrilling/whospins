@@ -232,7 +232,7 @@ namespace :location do
                   # transform to Web Mercator before simplifying, because simplifying 
                   # lat/lon geometries causes weird things to happen.  like the state 
                   # of Michigan disappearing.
-                  loc.connection.update_sql("UPDATE locations SET area = ST_Transform(ST_SimplifyPreserveTopology(ST_Transform(raw_area, 900913), #{attrs['tolerance']}), #{DB_SRID}) WHERE id = #{loc.id}")
+                  loc.connection.update_sql("UPDATE locations SET area = ST_Transform(st_multi(ST_SimplifyPreserveTopology(ST_Transform(raw_area, 900913), #{attrs['tolerance']})), #{DB_SRID}) WHERE id = #{loc.id}")
                 else
                   loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
                 end
@@ -363,5 +363,72 @@ namespace :location do
       location.connection.update_sql("UPDATE locations SET raw_area = ST_Multi(ST_Transform(ST_Expand(ST_Transform(ST_GeomFromEWKT('SRID=4326;POINT(#{attrs[5]} #{attrs[4]})'), 900913), 20000), #{DB_SRID})) WHERE id = #{location.id}")
       location.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{location.id}")
     end
+  end
+
+  desc "Simplify as much as possible without disappearing"
+  task :max_simplify => :environment do
+    maximum_tolerance = {}
+    current_tolerance = 500
+
+    while (current_tolerance < 30000)
+      puts "tolerance = #{current_tolerance + 500}"
+
+      query = "
+UPDATE locations 
+   SET area = ST_Transform(ST_Multi(ST_SimplifyPreserveTopology(ST_Transform(raw_area, 900913), #{current_tolerance + 500})), 4326) 
+ WHERE category = 'state'
+   AND parents ?| ARRAY['38','237']
+"
+      if (maximum_tolerance.keys.size > 0)
+        query += " AND id NOT IN (#{maximum_tolerance.keys.join(',')})"
+      end
+
+      Location.connection.update_sql(query)
+
+      Location.where(category: 'state').each do |l|
+        if (!maximum_tolerance.has_key?(l.id) && l.area.nil?)
+          maximum_tolerance[l.id] = current_tolerance
+        end
+      end
+
+      current_tolerance += 500
+    end
+
+    maximum_tolerance.each do |id, tol|
+      Location.connection.update_sql("
+UPDATE locations 
+   SET area = ST_Transform(ST_Multi(ST_SimplifyPreserveTopology(ST_Transform(raw_area, 900913), #{tol})), 4326) 
+ WHERE id = #{id}
+ ")
+    end
+  end
+
+  desc "Load simplified US states"
+  task :simple_us_states => :environment do
+    require 'rgeo/geo_json'
+
+    DATA_DIR = Rails.root.join('lib', 'data', 'location')
+    unless (File.file?(File.join(DATA_DIR, 'state', 'us_states.js')))
+      curl_cmd = "curl -L -o #{DATA_DIR}/state/us_states.js http://leafletjs.com/examples/us-states.js"
+      system curl_cmd
+    end
+
+    file = File.open("#{DATA_DIR}/state/us_states.js", "r")
+    file_string = file.read.gsub(/^.*?=\ /, '')[0..-3]
+    states = RGeo::GeoJSON.decode(file_string, :json_parser => :json)
+
+    states.each do |state|
+      l = Location.where(category: 'state', name: state['name']).first
+
+      unless (l.nil?)
+        puts "loading #{state['name']} (#{l.id})"
+        l.connection.execute("
+UPDATE locations
+   SET area = ST_Multi(ST_GeomFromEWKT('SRID=4326;#{state.geometry.as_text}'))
+ WHERE id = #{l.id}")
+      end
+    end
+
+    file.close
   end
 end

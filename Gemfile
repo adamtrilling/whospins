@@ -11,8 +11,8 @@ gem 'activerecord-postgis-adapter', :github => 'dazuma/activerecord-postgis-adap
 # gem 'activerecord-postgis-adapter', :path => '../activerecord-postgis-adapter'
 
 # gis
-# gem 'ffi-geos'
 gem 'rgeo-shapefile'
+gem 'rgeo-geojson'
 gem 'simpler-tiles', :require => 'simpler_tiles', :github => 'propublica/simpler-tiles'
 
 # front end
