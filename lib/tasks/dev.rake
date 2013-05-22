@@ -29,4 +29,10 @@ order by random()")
       puts "done"
     end
   end
+
+  desc "back up the production database"
+  task :dump_db => :environment do 
+    system "pg_dump -a -Fc -f lib/data/prod_#{Time.now.strftime("%Y%m%d")}.pgdump -h localhost -p 5433 -U postgres -w whospins_production"
+    system "pg_dump -a -Fc -t locations -f lib/data/prod_#{Time.now.strftime("%Y%m%d")}_locations.pgdump -h localhost -p 5433 -U postgres -w whospins_production"
+  end
 end
