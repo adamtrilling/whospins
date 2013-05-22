@@ -377,7 +377,7 @@ namespace :location do
 UPDATE locations 
    SET area = ST_Transform(ST_Multi(ST_SimplifyPreserveTopology(ST_Transform(raw_area, 900913), #{current_tolerance + 500})), 4326) 
  WHERE category = 'state'
-   AND parents ?| ARRAY['38','237']
+   AND parents ?| ARRAY['38']
 "
       if (maximum_tolerance.keys.size > 0)
         query += " AND id NOT IN (#{maximum_tolerance.keys.join(',')})"
