@@ -1,5 +1,60 @@
 require 'fileutils'
 
+DATA_DIR = Rails.root.join('lib', 'data', 'location')
+DB_SRID = 4326
+
+def process_shapefile(attrs)
+  cat = attrs['category']
+  puts "Downloading shapefile #{attrs['url']}"
+  unless (File.directory?(File.join(DATA_DIR, cat)))
+    Dir.mkdir(File.join(DATA_DIR, cat))
+  end
+
+  unless (File.file?(File.join(DATA_DIR, cat, attrs['shapefile'])))
+    curl_cmd = "curl -L -o #{DATA_DIR}/#{cat}/#{attrs['zipfile']} #{attrs['url']}"
+    unzip_cmd = "unzip -d #{DATA_DIR}/#{cat}/ #{DATA_DIR}/#{cat}/#{attrs['zipfile']}"
+    system curl_cmd
+    system unzip_cmd
+  end
+
+  RGeo::Shapefile::Reader.open("#{DATA_DIR}/#{cat}/#{attrs['shapefile']}") do |file|
+    puts "#{cat} file contains #{file.num_records} records."
+
+    i = 1
+    file.each do |record|
+      print "(#{i} of #{file.num_records}) #{record["name"]}#{record["NAME"]}..."
+
+      if (attrs.has_key?('parent_uid')) 
+        parent = Location.where(:uid => record[attrs['parent_uid']]).first
+      end
+
+      locations = attrs['processor'].call(cat, record)
+      puts "done"
+
+      unless (locations.nil?)
+        locations.each do |loc|
+
+          if (attrs['geom_field'])
+            loc.connection.update_sql("UPDATE locations SET #{attrs['geom_field']} = ST_Transform(ST_GeomFromText('#{record.geometry.as_text}', #{attrs['srid']}), #{DB_SRID}) WHERE id = #{loc.id}")
+          else
+            loc.connection.update_sql("UPDATE locations SET raw_area = ST_Transform(ST_GeomFromText('#{record.geometry.as_text}', #{attrs['srid']}), #{DB_SRID}) WHERE id = #{loc.id}")
+
+            if (attrs['tolerance'])
+              # transform to Web Mercator before simplifying, because simplifying 
+              # lat/lon geometries causes weird things to happen.  like the state 
+              # of Michigan disappearing.
+              loc.connection.update_sql("UPDATE locations SET area = ST_Transform(st_multi(ST_SimplifyPreserveTopology(ST_Transform(raw_area, 900913), #{attrs['tolerance']})), #{DB_SRID}) WHERE id = #{loc.id}")
+            else
+              loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
+            end
+          end
+        end
+      end
+      i += 1
+    end
+  end
+end
+
 namespace :location do
   desc "Remove existing location data"
   task :destroy => :environment do
@@ -9,20 +64,16 @@ namespace :location do
   end
 
   desc "Load data from shapefiles, creating or updating the Locations table"
-  task :load => :environment do
+  task :load_north_america => :environment do
 
-    DATA_DIR = Rails.root.join('lib', 'data', 'location')
     FileUtils.mkdir_p DATA_DIR
-
-    DB_SRID = Location.connection.select_all("SELECT Find_SRID('public', 'locations', 'raw_area') AS srid").first["srid"]
-
-    puts "Loading data - DB_SRID = #{DB_SRID}"
+    puts "Loading data"
 
     # this is weird and abuses metaprogramming a bit.  but it saves a lot of code 
     # repetition.  the processor needs to return either the locations it built for 
     # the current record, or nil if there is a failure or an intentional skip.  if
     # nil is returned, the area isn't added to the database.
-    shapefiles = [ 
+    [ 
       {
         'category' => 'country',
         'url' => 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries_lakes.zip',
@@ -190,58 +241,8 @@ namespace :location do
             :parents => parent.nil? ? {} : {parent.id => 'in'})]
         }
       },
-    ]
-
-    shapefiles.each do |attrs|
-      cat = attrs['category']
-      puts "Downloading shapefile #{attrs['url']}"
-      unless (File.directory?(File.join(DATA_DIR, cat)))
-        Dir.mkdir(File.join(DATA_DIR, cat))
-      end
-
-      unless (File.file?(File.join(DATA_DIR, cat, attrs['shapefile'])))
-        curl_cmd = "curl -L -o #{DATA_DIR}/#{cat}/#{attrs['zipfile']} #{attrs['url']}"
-        unzip_cmd = "unzip -d #{DATA_DIR}/#{cat}/ #{DATA_DIR}/#{cat}/#{attrs['zipfile']}"
-        system curl_cmd
-        system unzip_cmd
-      end
-
-      RGeo::Shapefile::Reader.open("#{DATA_DIR}/#{cat}/#{attrs['shapefile']}") do |file|
-        puts "#{cat} file contains #{file.num_records} records."
-
-        i = 1
-        file.each do |record|
-          print "(#{i} of #{file.num_records}) #{record["name"]}#{record["NAME"]}..."
-
-          if (attrs.has_key?('parent_uid')) 
-            parent = Location.where(:uid => record[attrs['parent_uid']]).first
-          end
-
-          locations = attrs['processor'].call(cat, record)
-          puts "done"
-
-          unless (locations.nil?)
-            locations.each do |loc|
-
-              if (attrs['geom_field'])
-                loc.connection.update_sql("UPDATE locations SET #{attrs['geom_field']} = ST_Transform(ST_GeomFromText('#{record.geometry.as_text}', #{attrs['srid']}), #{DB_SRID}) WHERE id = #{loc.id}")
-              else
-                loc.connection.update_sql("UPDATE locations SET raw_area = ST_Transform(ST_GeomFromText('#{record.geometry.as_text}', #{attrs['srid']}), #{DB_SRID}) WHERE id = #{loc.id}")
-
-                if (attrs['tolerance'])
-                  # transform to Web Mercator before simplifying, because simplifying 
-                  # lat/lon geometries causes weird things to happen.  like the state 
-                  # of Michigan disappearing.
-                  loc.connection.update_sql("UPDATE locations SET area = ST_Transform(st_multi(ST_SimplifyPreserveTopology(ST_Transform(raw_area, 900913), #{attrs['tolerance']})), #{DB_SRID}) WHERE id = #{loc.id}")
-                else
-                  loc.connection.update_sql("UPDATE locations SET area = raw_area WHERE id = #{loc.id}")
-                end
-              end
-            end
-          end
-          i += 1
-        end
-      end
+    ].each do |attrs|
+      process_shapefile(attrs)
     end
 
     # geonames has FIPS codes for non-US states/provinces
