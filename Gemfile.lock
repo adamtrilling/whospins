@@ -25,7 +25,6 @@ GEM
       rack-test (~> 0.6.2)
     actionpack-page_caching (1.0.0)
       actionpack (>= 4.0.0.beta, < 5.0)
-    active_record_query_trace (1.2)
     activemodel (4.0.0.rc1)
       activesupport (= 4.0.0.rc1)
       builder (~> 3.1.0)
@@ -49,6 +48,8 @@ GEM
     binding_of_caller (0.7.1)
       debug_inspector (>= 0.0.1)
     builder (3.1.4)
+    bullet (4.6.0)
+      uniform_notifier
     capistrano (2.15.4)
       highline
       net-scp (>= 1.0.0)
@@ -212,6 +213,7 @@ GEM
     unf (0.1.1)
       unf_ext
     unf_ext (0.0.6)
+    uniform_notifier (1.2.0)
     webrobots (0.1.1)
     will_paginate (3.0.4)
 
@@ -220,10 +222,10 @@ PLATFORMS
 
 DEPENDENCIES
   actionpack-page_caching
-  active_record_query_trace
   activerecord-postgis-adapter!
   better_errors
   binding_of_caller
+  bullet
   capistrano
   coffee-rails (~> 4.0.0.beta1)
   haml
