@@ -26,13 +26,13 @@ class User < ActiveRecord::Base
     # TON of time in generating overlays.
     User.transaction do
       if (location_ids.size > 0)
-        connection.execute("
+        User.connection.execute("
 UPDATE locations SET num_users = num_users + 1 
  WHERE id IN (#{location_ids.join(',')})")
       end
 
       if (self.old_location_ids && self.old_location_ids.size > 0)
-        connection.execute("
+        User.connection.execute("
 UPDATE locations SET num_users = num_users - 1 
  WHERE id IN (#{self.old_location_ids.join(',')})")
       end
@@ -41,14 +41,14 @@ UPDATE locations SET num_users = num_users - 1
       # the percentiles in one query, but said query is a 
       # real mess.
       location_ids.concat(self.old_location_ids.nil? ? [] : self.old_location_ids).each do |id|
-        percentiles = connection.select_all("
+        percentiles = User.connection.select_all("
 SELECT id, percent_rank() OVER (ORDER BY num_users) 
   FROM locations
  WHERE locations.parents ? '#{id}'
    AND (num_users > 0)")
 
         percentiles.each do |p|
-          connection.execute("
+          User.connection.execute("
 UPDATE locations 
    SET percentile = #{p['percent_rank']} 
  WHERE id = #{p['id']}")
@@ -61,10 +61,10 @@ UPDATE locations
     # cache the location numbers.  it saves a TON of time
     # in generating overlays.
     User.transaction do
-      connection.execute("
+      User.connection.execute("
 UPDATE locations SET num_users = 0
  WHERE id NOT IN (SELECT location_id FROM locations_users)")
-      connection.execute("
+      User.connection.execute("
 UPDATE locations SET num_users = subquery.num
   FROM (SELECT location_id, count(user_id) as num
           FROM locations_users
@@ -72,14 +72,14 @@ UPDATE locations SET num_users = subquery.num
  WHERE locations.id = subquery.location_id")
 
       Location.where("num_users > 0").pluck(:id).each do |id|
-        percentiles = connection.select_all("
+        percentiles = User.connection.select_all("
 SELECT id, percent_rank() OVER (ORDER BY num_users) 
   FROM locations
  WHERE locations.parents ? '#{id}'
    AND (num_users > 0)")
 
         percentiles.each do |p|
-          connection.execute("
+          User.connection.execute("
 UPDATE locations 
    SET percentile = #{p['percent_rank']} 
  WHERE id = #{p['id']}")
