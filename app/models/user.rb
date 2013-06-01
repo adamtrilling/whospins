@@ -15,9 +15,9 @@ class User < ActiveRecord::Base
     # if the location changed, we need to store the location 
     # names in a hash so that we can rebuild the locations 
     # table without losing user data
-    self.location_names = {}
-    locations.each do |l|
-      self.location_names[l.category] = l.name
+    self.location_names = locations.inject ({}) do |locs, loc|
+      locs[loc.category] = loc.name
+      locs
     end
   end
 
