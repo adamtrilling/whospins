@@ -1,0 +1,28 @@
+source "https://rubygems.org"
+
+# framework
+gem 'haml'
+gem 'passenger'
+gem 'sinatra'
+
+# database
+gem 'redis'
+
+# gis
+gem 'rgeo-shapefile'
+gem 'rgeo-geojson'
+
+# authentication
+gem 'omniauth'
+gem 'omniauth-facebook'
+gem 'omniauth-google-oauth2'
+gem 'omniauth-oauth'
+
+# other
+gem 'mechanize'
+gem 'will_paginate'
+
+group :development do
+  # deployment
+  gem 'capistrano'
+end

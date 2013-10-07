@@ -25,3 +25,5 @@
 /public/tiles
 /public/locations
 /public/cache
+
+.ruby-version
