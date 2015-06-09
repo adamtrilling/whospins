@@ -52,11 +52,8 @@ class UsersController < ApplicationController
   def current
     if (current_user)
       @user_data = {
-        :id => current_user.id,
-        :location => current_user.locations.inject({}) {|hash, loc| 
-          hash[loc.category] = loc.id
-          hash
-        }
+        user_id: current_user.id,
+        locations: current_user.locations.order(:adm_level).collect(&:id)
       }
     else
       @user_data = {}

@@ -1,13 +1,13 @@
 source 'https://rubygems.org'
 
 # framework
-gem 'rails', '4.0.0.rc1'
+gem 'rails', '~> 4.0.0'
 gem 'actionpack-page_caching'
-gem 'passenger', '4.0.0.rc6'
+gem 'passenger'
 
 # database
 gem 'pg'
-gem 'activerecord-postgis-adapter', :github => 'dazuma/activerecord-postgis-adapter'
+gem 'activerecord-postgis-adapter'
 # gem 'activerecord-postgis-adapter', :path => '../activerecord-postgis-adapter'
 
 # gis
@@ -17,8 +17,8 @@ gem 'simpler-tiles', :require => 'simpler_tiles', :github => 'propublica/simpler
 
 # front end
 group :assets do
-  gem 'sass-rails',   '~> 4.0.0.beta1'
-  gem 'coffee-rails', '~> 4.0.0.beta1'
+  gem 'sass-rails',   '~> 4.0.0'
+  gem 'react-rails'
   gem 'uglifier', '>= 1.0.3'
 end
 
@@ -45,6 +45,8 @@ group :development do
   gem 'bullet'
   gem 'better_errors'
   gem 'binding_of_caller'  
+  gem 'pry'
+  gem 'pry-nav'
 
   # deployment
   gem 'capistrano'

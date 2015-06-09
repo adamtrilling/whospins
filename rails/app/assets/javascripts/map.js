@@ -103,7 +103,10 @@ var map = L.map('map', {
   maxZoom: 8,
   maxBounds: [[-90, -180], [90, 180]]
 });
-var tileLayer = L.tileLayer('/tiles/{z}/{x}/{y}.png');
+var tileLayer = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.jpeg', {
+  attribution: 'Tiles by <a href="http://www.mapquest.com/">MapQuest</a> &mdash; Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+  subdomains: '1234'
+});
 map.addLayer(tileLayer).setView(new L.LatLng(38, -95), 3);
 
 var geojsonLayer = null;

@@ -7,28 +7,3 @@
 
   .row
     #location.label-box
-      - if current_user
-        =form_for current_user, :html => {:class => 'form-horizontal', :id => 'location-form'} do
-          .control-group
-            =label_tag :country, "Country", :class => 'control-label'
-            .controls
-              =select_tag 'country', options_from_collection_for_select(Location.supported_countries.order(:name), :id, :name, :selected => current_user_country_id ? current_user_country_id : nil), :include_blank => true
-          .control-group
-            =label_tag :state, "State/Province", :class => 'control-label'
-            .controls
-              =select_tag 'state', ''
-          .control-group
-            =label_tag :county, "County", :class => 'control-label'
-            .controls
-              =select_tag 'county', ''
-          .control-group
-            =label_tag :city, "City", :class => 'control-label'
-            .controls
-              =select_tag 'city', ''
-          .control-group
-            .controls
-              =submit_tag "Save", :class => 'btn', :id => 'location-save', 'data-loading-text' => 'Saving...', 'data-saved-text' => 'Saved!'
-              %span#location-save-status.text-error
-      -else
-        %a{'href' => '#loginModal', 'data-toggle' => 'modal'} Log In 
-        to add your location.

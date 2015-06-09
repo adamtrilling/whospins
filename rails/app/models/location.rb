@@ -14,6 +14,10 @@ class Location < ActiveRecord::Base
     end
   end
 
+  def parent
+    Location.find(parent_id)
+  end
+
   def country
     # recurse up the tree until we get a country
     current_loc = self

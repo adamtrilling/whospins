@@ -37,18 +37,10 @@ id NOT IN (select skeys(parents)::integer FROM locations where id = #{params[:id
 
   def children
     @locations = Location.where(
-      # you can't use the ? operator with bind varibles...
-      ["exist(parents, ?)", params[:id]]
+      ["parent_id = ?", params[:id]]
     ).select(
-      :id, :name, :category
-    ).group_by(
-      &:category
-    # simplify the data structure
-    ).inject({}) { |h, (k, v)|
-      h[k] = v.sort_by(&:name).collect { |loc|
-        { "id" => loc.id, "name" => loc.name }
-      }; h
-    }
+      :id, :name
+    ).order(:name)
 
     # no reason to use jbuilder here because to_json works fine
     respond_to do |format|

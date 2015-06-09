@@ -14,6 +14,9 @@
 //= require jquery_ujs
 //= require bootstrap
 //= require leaflet
+//= require react
+//= require react_ujs
+//= require components
 //= require_self
 //= require map
 //= require location_select
