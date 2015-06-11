@@ -7,30 +7,35 @@ class LocationsController < ApplicationController
     # out something smarter
     expires_now
 
-    @locations = Location.where("num_users > 0").includes(:users => :authorizations)
-
-    if (params[:id].to_i > 0)
-      # you can't use ? operators with bind parameters.  but we've already
-      # verified that params[:id] is an integer, so it is safe to pass without
-      # binding. 
-      # this query selects, by line:
-      # 1) the current location's children
-      # 2) the current location's siblings
-      # 3) all states (change to countries when there are more of them)
-      # 4) exclude the location itself and its country  
-      @locations = @locations.where("(
-parents ? '#{params[:id].to_i}' OR
-parents ?| (select akeys(parents) from locations where id = #{params[:id].to_i}) OR 
-category = 'state') AND
-id != #{params[:id].to_i} AND 
-id NOT IN (select skeys(parents)::integer FROM locations where id = #{params[:id].to_i})")
-    else
-      @locations = @locations.where(category: params[:id])
-    end
+    @locations = Location.includes(:users => :authorizations).
+      where(["geojson IS NOT NULL AND parent_id = ?", params[:id]])
 
     respond_to do |format|
       format.json do 
-        render 'overlay'
+        render :json => {
+          type: "FeatureCollection",
+          features: @locations.collect do |loc|
+            { type: 'Feature',
+              id: loc.id,
+              properties: {
+                category: loc.category,
+                display_name: loc.display_name,
+                num_users: loc.users.size,
+                percentile: loc.percentile,
+                users: loc.users.sort_by(&:sort_name).collect do |user|
+                  { name: user.name,
+                    profiles: user.authorizations.sort_by(&:provider).collect do |auth|
+                      { provider: auth.provider,
+                        profile_url: auth.profile_url
+                      }
+                    end
+                  }
+                end
+              },
+              geometry: JSON.parse(loc.geojson)
+            }
+          end
+        }.to_json
       end
     end
   end
@@ -42,7 +47,6 @@ id NOT IN (select skeys(parents)::integer FROM locations where id = #{params[:id
       :id, :name
     ).order(:name)
 
-    # no reason to use jbuilder here because to_json works fine
     respond_to do |format|
       format.json do        
         render :json => @locations.to_json

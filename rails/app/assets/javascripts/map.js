@@ -110,7 +110,7 @@ var tileLayer = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{
 map.addLayer(tileLayer).setView(new L.LatLng(38, -95), 3);
 
 var geojsonLayer = null;
-var overlayID = 'state';
+var overlayID = '0';
 
 getOverlay();
 

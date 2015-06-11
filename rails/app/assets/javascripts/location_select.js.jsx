@@ -10,19 +10,18 @@ var LocationFormBlankState = React.createClass({
 
 var LocationForm = React.createClass({
   fetchUserInfo: function() {
+    var self = this;
     $.ajax({
       url: '/users/current.json',
       dataType: 'json',
-      cache: false,
-      success: function(data) {
-        this.setState({
-          loggedIn: data.user_id != null,
-          locations: data.locations
-        });
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
+      cache: false
+    }).done(function(data) {
+      self.setState({
+        loggedIn: data.user_id != null,
+        locations: data.locations
+      });
+    }).fail(function(xhr, status, err) {
+      console.error(self.props.url, err);
     });
   },
 
@@ -82,24 +81,23 @@ var LocationSelect = React.createClass({
     }
   },
 
-  fetchOptions: function() {
-    if (this.props.parent === undefined) {
+  fetchOptions: function(newParent) {
+    var self = this;
+    if (newParent === undefined) {
       this.setState({
         options: []
       });
     } else {
       $.ajax({
-        url: '/locations/children/' + this.props.parent + '.json',
+        url: '/locations/children/' + newParent + '.json',
         dataType: 'json',
-        cache: false,
-        success: function(data) {
-          this.setState({
-            options: data
-          });
-        }.bind(this),
-        error: function(xhr, status, err) {
-          console.error(this.props.url, status, err.toString());
-        }.bind(this)
+        cache: false
+      }).done(function(data) {
+        self.setState({
+          options: data
+        });
+      }).fail(function(xhr, status, err) {
+        console.error(self.props.url, status, err.toString());
       });
     }
   },
@@ -111,11 +109,14 @@ var LocationSelect = React.createClass({
   },
 
   componentDidMount: function() {
-    this.fetchOptions();
+    this.fetchOptions(this.props.parent);
   },
 
-  componentWillUpdate: function() {
-    this.fetchOptions();
+  componentWillReceiveProps: function(nextProps) {
+    if (this.props.selected != nextProps.selected ||
+        this.props.parent != nextProps.parent) {
+      this.fetchOptions(nextProps.parent);
+    }
   },
 
   handleChange: function(event) {

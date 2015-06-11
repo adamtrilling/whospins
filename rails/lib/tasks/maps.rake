@@ -1,3 +1,5 @@
+require 'json'
+
 class Geoname < ActiveRecord::Base
 end
 
@@ -149,6 +151,25 @@ def geonames_split(record)
  record.force_encoding('ISO-8859-1').encode('UTF-8').split("\t")
 end
 
+def load_shapefiles
+  # countries
+  JSON.parse(File.read("#{DATA_DIR}/countries.json"))['features'].each do |feature|
+    location = Location.where(["adm_level = 1 AND props -> 'iso_a2' = ?", 
+      feature['properties']['iso_a2']]).first
+    next unless location.present?
+    puts "loading shapefile for #{feature['properties']['formal_en']}"
+    location.update_attributes(geojson: feature['geometry'].to_json)
+  end
+
+  # states
+  JSON.parse(File.read("#{DATA_DIR}/states.json"))['features'].each do |feature|
+    location = Location.find_by(geonames_id: feature['properties']['gn_id'])
+    next unless location.present?
+    puts "loading shapefile for #{feature['properties']['name']}, #{feature['properties']['admin']}"
+    location.update_attributes(geojson: feature['geometry'].to_json)
+  end
+end
+
 namespace :maps do
   desc "load geonames data"
   task :load_geonames => :environment do
@@ -166,19 +187,8 @@ namespace :maps do
     load_geonames_divisions
   end
 
-  task :copy_geonames => :environment do
-    copy_geonames
-  end
-
-  task :clear_city_data => :environment do
-    clear_city_data
-  end
-
-  task :clear_non_us_data => :environment do
-    clear_non_us_data
-  end
-
-  task :load_geonames_divisions => :environment do
-    load_geonames_divisions
+  desc "load shapefiles"
+  task :load_shapefiles => :environment do
+    load_shapefiles
   end
 end
