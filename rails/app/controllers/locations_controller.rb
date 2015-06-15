@@ -7,8 +7,8 @@ class LocationsController < ApplicationController
     # out something smarter
     expires_now
 
-    @locations = Location.includes(:users => :authorizations).
-      where(["geojson IS NOT NULL AND parent_id = ?", params[:id]])
+    @locations = Location.includes(:parent, :users).
+      where(["geojson IS NOT NULL AND num_users > 0 AND parent_id = ?", params[:id]])
 
     respond_to do |format|
       format.json do 
@@ -21,21 +21,33 @@ class LocationsController < ApplicationController
                 category: loc.category,
                 display_name: loc.display_name,
                 num_users: loc.users.size,
-                percentile: loc.percentile,
-                users: loc.users.sort_by(&:sort_name).collect do |user|
-                  { name: user.name,
-                    profiles: user.authorizations.sort_by(&:provider).collect do |auth|
-                      { provider: auth.provider,
-                        profile_url: auth.profile_url
-                      }
-                    end
-                  }
-                end
+                percentile: loc.percentile
               },
               geometry: JSON.parse(loc.geojson)
             }
           end
         }.to_json
+      end
+    end
+  end
+
+  def users
+    @location = Location.includes(:users => [:authorizations]).find(params[:id])
+    @users = @location.users
+
+    respond_to do |format|
+      format.json do
+        render :json => {
+          users: @users.sort_by(&:sort_name).collect do |user|
+            { name: user.name,
+              profiles: user.authorizations.sort_by(&:provider).collect do |auth|
+                { provider: auth.provider,
+                  profile_url: auth.profile_url
+                }
+              end
+            }
+          end
+        }
       end
     end
   end

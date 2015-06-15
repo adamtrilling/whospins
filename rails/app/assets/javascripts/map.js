@@ -40,30 +40,14 @@ function resetHighlight(e) {
 
 function zoomToFeature(e) {
   map.fitBounds(e.target.getBounds());
-
-  // update the sidebar with the list of users
-  props = e.target.feature.properties;
-
-  html = "<b>" + props.display_name + "</b><br/>"
-  for (var u in props.users) {
-    html = html + '<br />';
-    for (var p in props.users[u].profiles) {
-      var profile = props.users[u].profiles[p];
-      html = html + '<a href="' + profile.profile_url + '" target="_blank">';
-      html = html + '<img src="/assets/' + profile.provider + '_24.png"/>';
-      html = html + '</a>';
-    }
-    
-    html = html + props.users[u].name;
-  }
-  $('#userlist').html(html);
+  var props = e.target.feature.properties;
 
   // if the feature was a country or a state, load 
   // the overlay for the feature
   if (props.category == 'country' || props.category == 'state') {
-    overlayID = e.target.feature.id;
-    getOverlay();
+    getOverlay(e.target.feature.id);
   }
+  getUsers(e.target.feature.id);
 }
 
 function onEachFeature(feature, layer) {
@@ -74,7 +58,7 @@ function onEachFeature(feature, layer) {
   });
 }
 
-function getOverlay() {
+function getOverlay(locationId) {
   // remove the existing layer, if any
   if (geojsonLayer && map.hasLayer(geojsonLayer)) {
     map.removeLayer(geojsonLayer);
@@ -83,9 +67,8 @@ function getOverlay() {
   // grab the geojson layer
   $.ajax({
     type: "GET",
-    url: "/locations/overlay/" + overlayID + ".json",
+    url: "/locations/overlay/" + locationId + ".json",
     dataType: 'json',
-    async: false,
     success: function(response) {
       geojsonLayer = L.geoJson(response, {
         style: style,
@@ -97,9 +80,35 @@ function getOverlay() {
   });
 }
 
+function getUsers(locationId) {
+  $.ajax({
+    type: "GET",
+    url: "/locations/users/" + locationId + ".json",
+    dataType: 'json',
+    success: function(response) {
+      console.log("getting users for " + locationId);
+      // update the sidebar with the list of users
+      var   html = "<b>" + response.display_name + "</b><br/>";
+      var users = response.users;
+      for (var u in users) {
+        html = html + '<br />';
+        for (var p in users[u].profiles) {
+          var profile = users[u].profiles[p];
+          html = html + '<a href="' + profile.profile_url + '" target="_blank">';
+          html = html + '<img src="/assets/' + profile.provider + '_24.png"/>';
+          html = html + '</a>';
+        }
+
+        html = html + users[u].name;
+      }
+      $('#userlist').html(html);
+    },
+  });
+}
+
 // set up the map
 var map = L.map('map', {
-  minZoom: 3,
+  minZoom: 2,
   maxZoom: 8,
   maxBounds: [[-90, -180], [90, 180]]
 });
@@ -107,18 +116,16 @@ var tileLayer = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{
   attribution: 'Tiles by <a href="http://www.mapquest.com/">MapQuest</a> &mdash; Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
   subdomains: '1234'
 });
-map.addLayer(tileLayer).setView(new L.LatLng(38, -95), 3);
+map.addLayer(tileLayer).setView(new L.LatLng(0, 0), 2);
 
 var geojsonLayer = null;
-var overlayID = '0';
-
-getOverlay();
+getOverlay(0);
 
 // info box
 var info = L.control();
 
 info.onAdd = function (map) {
-  this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+  this._div = L.DomUtil.create('div', 'info'); 
   this.update();
   return this._div;
 };
@@ -145,3 +152,68 @@ info.update = function (props) {
 };
 
 info.addTo(map);
+
+// zoom to parent button
+L.Control.EasyButtons = L.Control.extend({
+    options: {
+        position: 'topleft',
+        title: '',
+        intendedIcon: 'fa-circle-o'
+    },
+
+    onAdd: function () {
+        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+
+        this.link = L.DomUtil.create('a', 'leaflet-bar-part', container);
+        this._addImage()
+        this.link.href = '#';
+
+        L.DomEvent.on(this.link, 'click', this._click, this);
+        this.link.title = this.options.title;
+
+        return container;
+    },
+
+    intendedFunction: function(){ alert('no function selected');},
+
+    _click: function (e) {
+        L.DomEvent.stopPropagation(e);
+        L.DomEvent.preventDefault(e);
+        this.intendedFunction();
+        this.link.blur();
+    },
+
+    _addImage: function () {
+        var extraClasses = this.options.intendedIcon.lastIndexOf('fa', 0) === 0 ? ' fa fa-lg' : ' glyphicon';
+
+        var icon = L.DomUtil.create('i', this.options.intendedIcon + extraClasses, this.link);
+        icon.id = this.options.id;
+    }
+});
+
+L.easyButton = function( btnIcon , btnFunction , btnTitle , btnMap , btnId) {
+  var newControl = new L.Control.EasyButtons();
+
+  if (btnIcon) newControl.options.intendedIcon = btnIcon;
+  if (btnId) newControl.options.id = btnId;
+
+  if ( typeof btnFunction === 'function'){
+    newControl.intendedFunction = btnFunction;
+  }
+
+  if (btnTitle) newControl.options.title = btnTitle;
+
+  if ( btnMap === '' ){
+    // skip auto addition
+  } else if ( btnMap ) {
+    btnMap.addControl(newControl);
+  } else {
+    map.addControl(newControl);
+  }
+  return newControl;
+};
+
+L.easyButton('some-icon', function() { 
+  console.log("clicked");
+  getOverlay(0); 
+}, "Zoom to World", map);

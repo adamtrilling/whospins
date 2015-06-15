@@ -16,4 +16,5 @@ Whospins::Application.routes.draw do
 
   get '/locations/children/:id.:format' => 'locations#children'
   get '/locations/overlay/:id.:format' => 'locations#overlay'
+  get 'locations/users/:id.:format' => 'locations#users'
 end

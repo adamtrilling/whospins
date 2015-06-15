@@ -167,6 +167,21 @@ def load_shapefiles
     next unless location.present?
     puts "loading shapefile for #{feature['properties']['name']}, #{feature['properties']['admin']}"
     location.update_attributes(geojson: feature['geometry'].to_json)
+    if (location.parent_id == 237)
+      location.update_attributes(
+        props: location.props.merge('fips' => feature['properties']['fips'].gsub(/^US/, ''))
+      )
+    end
+  end
+
+  # us counties
+  JSON.parse(File.read("#{DATA_DIR}/us_counties.json"))['features'].each do |feature|
+    parent_location = Location.where(["parent_id = 237 AND props -> 'fips' = ?", feature['properties']['STATEFP']]).first
+    next unless parent_location.present?
+    location = Location.where(["parent_id = ? AND props -> 'fips' = ?", parent_location.id, feature['properties']['COUNTYFP']]).first
+    next unless location.present?
+    puts "loading shapefile for #{feature['properties']['NAME']}, #{parent_location.name}"
+    location.update_attributes(geojson: feature['geometry'].to_json)
   end
 end
 

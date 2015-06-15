@@ -71,17 +71,17 @@ UPDATE locations SET num_users = subquery.num
       GROUP BY location_id) AS subquery
  WHERE locations.id = subquery.location_id")
 
-      Location.where("num_users > 0").pluck(:id).each do |id|
+      Location.where("num_users > 0 OR id = 0").pluck(:id).each do |id|
         percentiles = User.connection.select_all("
 SELECT id, percent_rank() OVER (ORDER BY num_users) 
   FROM locations
- WHERE locations.parents ? '#{id}'
+ WHERE locations.parent_id = #{id}
    AND (num_users > 0)")
 
         percentiles.each do |p|
           User.connection.execute("
 UPDATE locations 
-   SET percentile = #{p['percent_rank']} 
+   SET percentile = #{p['percent_rank']}
  WHERE id = #{p['id']}")
         end
       end
